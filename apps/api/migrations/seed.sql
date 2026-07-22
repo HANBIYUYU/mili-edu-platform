@@ -1,8 +1,11 @@
--- Seed: initial admin
+-- Seed: initial data
 -- 默认密码: mili2026 (请在首次登录后修改)
--- 注意：下面的 hash 是占位符，需要用 bcrypt 生成真实的
+
+-- 先替换下面的 hash 为真实 bcrypt hash
+-- 生成命令: node -e "const bcrypt=require('bcryptjs');console.log(bcrypt.hashSync('mili2026',10))"
+
 INSERT OR IGNORE INTO admins (username, password_hash) 
-VALUES ('admin', '$2a$10$YourBcryptHashHere');
+VALUES ('admin', '$2a$10$UkHmAhtCAJ6RSYFE3zRM/OksU/D4GAZn7Kb4TUkG2UAIpew5Awuqe');
 
 INSERT OR IGNORE INTO videos (title, iframe_src, category, sort_order) VALUES
 ('2026暑期支教总结', '//player.bilibili.com/player.html?bvid=BV1xx411c7mD', '总结视频', 1),
