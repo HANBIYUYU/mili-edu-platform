@@ -3,19 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "npm run dev --workspace=apps/web & npm run dev --workspace=apps/api",
-    "dev:web": "npm run dev --workspace=apps/web",
-    "dev:api": "npm run dev --workspace=apps/api",
-    "build:web": "npm run build --workspace=apps/web",
-    "deploy:web": "npm run deploy --workspace=apps/web",
-    "deploy:api": "npm run deploy --workspace=apps/api",
-    "db:migrate": "npm run db:migrate --workspace=apps/api",
-    "db:seed": "npm run db:seed --workspace=apps/api",
+    "dev:web": "pnpm --filter mili-edu-web dev",
+    "dev:api": "pnpm --filter mili-edu-api dev",
+    "deploy:web": "pnpm --filter mili-edu-web deploy",
+    "deploy:api": "pnpm --filter mili-edu-api deploy",
+    "db:migrate": "pnpm --filter mili-edu-api db:migrate",
+    "db:seed": "pnpm --filter mili-edu-api db:seed",
     "clean": "rm -rf node_modules apps/*/node_modules"
   },
-  "workspaces": [
-    "apps/*"
-  ],
   "devDependencies": {
     "typescript": "^5.5.0"
   },
