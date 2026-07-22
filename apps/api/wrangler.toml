@@ -1,0 +1,28 @@
+name = "mili-edu-api"
+main = "src/index.ts"
+compatibility_date = "2026-07-20"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mili-edu-db"
+database_id = "7d322252-614d-4dd6-ba6f-81d343cdd8a9"
+
+# R2 存储 - TODO: 等外币卡开通后启用
+# [[r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "mili-edu-assets"
+
+# KV 命名空间 - TODO: 创建后填入 id
+# [[kv_namespaces]]
+# binding = "JWT_BLACKLIST"
+# id = "your-kv-namespace-id"
+
+[vars]
+WEBHOOK_URL = ""
+JWT_SECRET = "mili-edu-dev-secret-change-in-production"
+
+[env.dev]
+vars = { ENVIRONMENT = "dev" }
+
+[env.production]
+vars = { ENVIRONMENT = "production" }

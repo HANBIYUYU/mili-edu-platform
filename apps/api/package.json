@@ -1,0 +1,22 @@
+{
+  "name": "mili-edu-api",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply mili-edu-db",
+    "db:seed": "wrangler d1 execute mili-edu-db --file=./migrations/seed.sql"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "hono": "^4.5.0",
+    "jose": "^5.6.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240718.0",
+    "@types/bcryptjs": "^2.4.6",
+    "typescript": "^5.5.0",
+    "wrangler": "^4.113.0"
+  }
+}
