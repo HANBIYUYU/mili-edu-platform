@@ -12,7 +12,11 @@ const app = new Hono<{ Bindings: Env }>()
 
 app.use('*', logger())
 app.use('*', cors({
-  origin: ['http://localhost:5173', 'https://mili-edu.org'],
+  origin: [
+    'http://localhost:5173',
+    'https://mili-edu.org',
+    'https://1955aa68.mili-edu.pages.dev',  // 部署域名
+  ],
   credentials: true,
 }))
 

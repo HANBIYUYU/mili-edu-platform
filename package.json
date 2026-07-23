@@ -5,10 +5,13 @@
   "scripts": {
     "dev:web": "pnpm --filter mili-edu-web dev",
     "dev:api": "pnpm --filter mili-edu-api dev",
-    "deploy:web": "pnpm --filter mili-edu-web deploy",
-    "deploy:api": "pnpm --filter mili-edu-api deploy",
+    "build:web": "pnpm --filter mili-edu-web build",
+    "deploy:web": "pnpm --filter mili-edu-web exec wrangler pages deploy dist",
+    "deploy:api": "pnpm --filter mili-edu-api exec wrangler deploy",
     "db:migrate": "pnpm --filter mili-edu-api db:migrate",
+    "db:migrate:remote": "pnpm --filter mili-edu-api db:migrate:remote",
     "db:seed": "pnpm --filter mili-edu-api db:seed",
+    "db:seed:remote": "pnpm --filter mili-edu-api db:seed:remote",
     "clean": "rm -rf node_modules apps/*/node_modules"
   },
   "devDependencies": {

@@ -6,7 +6,9 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply mili-edu-db",
-    "db:seed": "wrangler d1 execute mili-edu-db --file=./migrations/seed.sql"
+    "db:migrate:remote": "wrangler d1 migrations apply mili-edu-db --remote",
+    "db:seed": "wrangler d1 execute mili-edu-db --file=./migrations/seed.sql",
+    "db:seed:remote": "wrangler d1 execute mili-edu-db --file=./migrations/seed.sql --remote"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
