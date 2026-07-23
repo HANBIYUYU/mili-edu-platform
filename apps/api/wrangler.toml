@@ -2,6 +2,13 @@ name = "mili-edu-api"
 main = "src/index.ts"
 compatibility_date = "2026-07-20"
 
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+
 [[d1_databases]]
 binding = "DB"
 database_name = "mili-edu-db"
@@ -22,7 +29,13 @@ WEBHOOK_URL = ""
 JWT_SECRET = "decc7ca11b1a508b27dbfd97ba2051f10a9b738a5ac0dd11b0857055ac45d6bd"
 
 [env.dev]
-vars = { ENVIRONMENT = "dev" }
+vars = { ENVIRONMENT = "dev", WEBHOOK_URL = "", JWT_SECRET = "mili-edu-dev-secret-change-in-production" }
+d1_databases = [
+  { binding = "DB", database_name = "mili-edu-db", database_id = "7d322252-614d-4dd6-ba6f-81d343cdd8a9" }
+]
 
 [env.production]
-vars = { ENVIRONMENT = "production" }
+vars = { ENVIRONMENT = "production", WEBHOOK_URL = "", JWT_SECRET = "3128142401d6ea887a4d2f7326eec2c534a7cc02651e36e8e51fb128c20555f2" }
+d1_databases = [
+  { binding = "DB", database_name = "mili-edu-db", database_id = "7d322252-614d-4dd6-ba6f-81d343cdd8a9" }
+]
