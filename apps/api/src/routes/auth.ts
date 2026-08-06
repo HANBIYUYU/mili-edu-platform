@@ -37,7 +37,7 @@ auth.post('/login', async (c) => {
     .setExpirationTime('24h')
     .sign(secret)
   
-  c.header('Set-Cookie', `token=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`)
+  c.header('Set-Cookie', `token=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=86400`)
   
   return c.json({ success: true, username: admin.username })
 })
@@ -53,7 +53,7 @@ auth.post('/logout', async (c) => {
     }
   }
   
-  c.header('Set-Cookie', 'token=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0')
+  c.header('Set-Cookie', 'token=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0')
   return c.json({ success: true })
 })
 

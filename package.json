@@ -6,7 +6,7 @@
     "dev:web": "pnpm --filter mili-edu-web dev",
     "dev:api": "pnpm --filter mili-edu-api dev",
     "build:web": "pnpm --filter mili-edu-web build",
-    "deploy:web": "pnpm --filter mili-edu-web exec wrangler pages deploy dist",
+    "deploy:web": "pnpm --filter mili-edu-web build && pnpm --filter mili-edu-web exec wrangler pages deploy dist --branch=main",
     "deploy:api": "pnpm --filter mili-edu-api exec wrangler deploy",
     "db:migrate": "pnpm --filter mili-edu-api db:migrate",
     "db:migrate:remote": "pnpm --filter mili-edu-api db:migrate:remote",
