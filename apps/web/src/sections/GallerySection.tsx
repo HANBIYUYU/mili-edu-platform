@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Modal, Skeleton, Empty } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import RevealWrapper from '../components/RevealWrapper';
@@ -15,6 +16,7 @@ interface ArtworkItem {
 }
 
 export default function GallerySection() {
+  const navigate = useNavigate();
   const [artworks, setArtworks] = useState<ArtworkItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -36,16 +38,27 @@ export default function GallerySection() {
       id="gallery"
       style={{
         background: 'linear-gradient(180deg, #8BBC9C 0%, #6BAF92 50%, #7CBF9A 100%)',
-        padding: 'clamp(100px, 14vw, 180px) 24px',
+        padding: '100px 24px',
         position: 'relative',
       }}
     >
       <div className="container" style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <RevealWrapper>
-          <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 700, lineHeight: 1.2, color: '#FAF9F6', textAlign: 'center', marginBottom: 16, textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            儿童画展
-          </h2>
-        </RevealWrapper>
+        {/* 标题 + 了解更多 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+          <RevealWrapper>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 700, lineHeight: 1.2, color: '#FAF9F6', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+              儿童画展
+            </h2>
+          </RevealWrapper>
+          <RevealWrapper delay={1}>
+            <button
+              onClick={() => navigate('/gallery')}
+              style={{ padding: '10px 24px', fontSize: 14, borderRadius: 28, border: '1px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', transition: 'all 0.3s ease' }}
+            >
+              了解更多 →
+            </button>
+          </RevealWrapper>
+        </div>
 
         <RevealWrapper delay={1}>
           <p style={{ fontSize: 16, lineHeight: 1.8, color: 'rgba(250, 249, 246, 0.8)', textAlign: 'center', maxWidth: 560, margin: '0 auto 60px' }}>
@@ -54,7 +67,7 @@ export default function GallerySection() {
         </RevealWrapper>
 
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 24 }}>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} style={{ aspectRatio: '1', background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: 20 }}>
                 <Skeleton.Image style={{ width: '100%', height: '100%' }} active />
@@ -64,7 +77,7 @@ export default function GallerySection() {
         ) : artworks.length === 0 ? (
           <Empty description="暂无作品" />
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 24 }}>
             {artworks.map((a, index) => (
               <RevealWrapper key={a.id} delay={index + 1}>
                 <div

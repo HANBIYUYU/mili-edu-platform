@@ -12,8 +12,8 @@ export default function HeroSection() {
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(180deg, #2C3E33 0%, #3D6B52 25%, #6BAF92 55%, #C8E6C9 75%, #FAF9F6 100%)',
-        padding: 'clamp(80px, 12vh, 140px) 24px clamp(60px, 8vh, 100px)',
+        background: 'linear-gradient(160deg, #EDCC80 0%, #F5D89A 35%, #F5E6C8 65%, #F5C76E 100%)',
+        padding: '120px 24px 100px',
       }}
     >
       {/* 装饰光晕 */}
@@ -26,7 +26,7 @@ export default function HeroSection() {
           width: 500,
           height: 500,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(107, 175, 146, 0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(245, 166, 35, 0.15) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />
@@ -39,7 +39,7 @@ export default function HeroSection() {
           width: 300,
           height: 300,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(245, 166, 35, 0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(107, 175, 146, 0.08) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />
@@ -61,7 +61,7 @@ export default function HeroSection() {
               width: 'clamp(80px, 12vw, 140px)',
               height: 'auto',
               marginBottom: 24,
-              filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))',
+              filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.06))',
             }}
           />
         </RevealWrapper>
@@ -73,9 +73,8 @@ export default function HeroSection() {
               fontWeight: 800,
               lineHeight: 1.1,
               letterSpacing: '-0.03em',
-              color: '#FAF9F6',
+              color: '#2C3E33',
               marginBottom: 20,
-              textShadow: '0 2px 16px rgba(0,0,0,0.2)',
             }}
           >
             米粒支教社
@@ -87,7 +86,7 @@ export default function HeroSection() {
             style={{
               fontSize: 'clamp(20px, 3vw, 32px)',
               fontWeight: 600,
-              background: 'linear-gradient(135deg, #F5A623 0%, #F5D89A 50%, #FAF9F6 100%)',
+              background: 'linear-gradient(135deg, #6BAF92 0%, #F5A623 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -103,10 +102,9 @@ export default function HeroSection() {
             style={{
               fontSize: 17,
               lineHeight: 1.8,
-              color: 'rgba(250, 249, 246, 0.85)',
+              color: '#7a6a4a',
               maxWidth: 520,
               margin: '0 auto 40px',
-              textShadow: '0 1px 4px rgba(0,0,0,0.1)',
             }}
           >
             我们汇聚每一份微小的力量，为偏远地区的孩子们带去知识与希望。
@@ -141,9 +139,9 @@ export default function HeroSection() {
         }}
         className="scroll-hint"
       >
-        <span style={{ fontSize: 11, color: 'rgba(250, 249, 246, 0.6)', letterSpacing: '0.1em' }}>向下滚动</span>
+        <span style={{ fontSize: 11, color: 'rgba(122, 106, 74, 0.5)', letterSpacing: '0.1em' }}>向下滚动</span>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M4 6L8 10L12 6" stroke="rgba(250, 249, 246, 0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M4 6L8 10L12 6" stroke="rgba(122, 106, 74, 0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
 

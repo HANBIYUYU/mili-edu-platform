@@ -32,7 +32,7 @@ export default function ContactSection() {
       id="contact"
       style={{
         background: 'linear-gradient(180deg, #9CBA8A 0%, #B8C89A 30%, #F5C76E 70%, #F5D89A 100%)',
-        padding: 'clamp(100px, 14vw, 180px) 24px clamp(100px, 12vw, 160px)',
+        padding: '100px 24px',
         position: 'relative',
       }}
     >

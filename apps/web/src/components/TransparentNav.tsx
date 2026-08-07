@@ -62,10 +62,10 @@ export default function TransparentNav() {
           justifyContent: 'space-between',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           borderRadius: scrolled ? 20 : 16,
-          background: scrolled ? 'rgba(250, 249, 246, 0.85)' : 'rgba(44, 62, 51, 0.15)',
-          backdropFilter: scrolled ? 'blur(16px) saturate(1.2)' : 'blur(8px)',
-          WebkitBackdropFilter: scrolled ? 'blur(16px) saturate(1.2)' : 'blur(8px)',
-          border: scrolled ? '1px solid rgba(107, 175, 146, 0.12)' : '1px solid rgba(255,255,255,0.08)',
+          background: scrolled ? 'rgba(250, 249, 246, 0.85)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(16px) saturate(1.2)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(16px) saturate(1.2)' : 'none',
+          border: scrolled ? '1px solid rgba(107, 175, 146, 0.12)' : '1px solid transparent',
           boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.06)' : 'none',
         }}
       >
@@ -75,7 +75,7 @@ export default function TransparentNav() {
           style={{
             fontSize: 20,
             fontWeight: 800,
-            color: scrolled ? '#2C3E33' : '#FAF9F6',
+            color: scrolled ? '#2C3E33' : '#2C3E33',
             letterSpacing: '-0.02em',
             cursor: 'pointer',
             userSelect: 'none',
@@ -107,7 +107,7 @@ export default function TransparentNav() {
                 border: 'none',
                 fontSize: 15,
                 fontWeight: 500,
-                color: activeSection === item.id ? '#6BAF92' : scrolled ? '#5a6a5a' : 'rgba(250, 249, 246, 0.8)',
+                color: activeSection === item.id ? '#6BAF92' : scrolled ? '#5a6a5a' : '#5a6a5a',
                 cursor: 'pointer',
                 padding: '4px 0',
                 borderBottom: activeSection === item.id ? '2px solid #6BAF92' : '2px solid transparent',
@@ -128,7 +128,7 @@ export default function TransparentNav() {
             background: 'none',
             border: 'none',
             fontSize: 20,
-            color: scrolled ? '#2C3E33' : '#FAF9F6',
+            color: scrolled ? '#2C3E33' : '#2C3E33',
             cursor: 'pointer',
           }}
           className="nav-mobile-btn"

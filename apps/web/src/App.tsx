@@ -1,5 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
+import AboutPage from './pages/About'
+import VideosPage from './pages/Videos'
+import MaterialsPage from './pages/Materials'
+import GalleryPage from './pages/Gallery'
 import AdminLayout from './components/AdminLayout'
 import AdminLogin from './pages/Admin/Login'
 import AdminDashboard from './pages/Admin/Dashboard'
@@ -14,11 +18,11 @@ function App() {
       {/* 前台：长滚动单页 */}
       <Route path="/" element={<Home />} />
 
-      {/* 旧路由重定向到首页锚点 */}
-      <Route path="/about" element={<Navigate to="/#about" replace />} />
-      <Route path="/videos" element={<Navigate to="/#videos" replace />} />
-      <Route path="/materials" element={<Navigate to="/#materials" replace />} />
-      <Route path="/gallery" element={<Navigate to="/#gallery" replace />} />
+      {/* 独立详情页 */}
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/videos" element={<VideosPage />} />
+      <Route path="/materials" element={<MaterialsPage />} />
+      <Route path="/gallery" element={<GalleryPage />} />
       <Route path="/contact" element={<Navigate to="/#contact" replace />} />
 
       {/* 管理后台保持不变 */}
