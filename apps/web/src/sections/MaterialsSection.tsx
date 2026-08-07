@@ -39,32 +39,24 @@ export default function MaterialsSection() {
     <section
       id="materials"
       style={{
-        background: 'linear-gradient(180deg, #C8E6C9 0%, #A5D6A7 100%)',
-        padding: '100px 24px',
+        background: '#C8E6C9',
+        padding: '55px 24px',
         position: 'relative',
       }}
     >
-      <div className="container" style={{ maxWidth: 1000, margin: '0 auto' }}>
+      <div className="container" style={{ maxWidth: 1100, margin: '0 auto' }}>
         {/* 标题 + 了解更多 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+        <div className="section-header">
           <RevealWrapper>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 700, lineHeight: 1.2, color: '#2C3E33', margin: 0 }}>
-              推普资料
-            </h2>
+            <h2 className="section-title" style={{ color: '#2C3E33' }}>推普资料</h2>
           </RevealWrapper>
           <RevealWrapper delay={1}>
-            <button
-              onClick={() => navigate('/materials')}
-              className="btn-secondary"
-              style={{ padding: '10px 24px', fontSize: 14 }}
-            >
-              了解更多 →
-            </button>
+            <button onClick={() => navigate('/materials')} className="btn-secondary" style={{ padding: '10px 24px', fontSize: 14 }}>了解更多 →</button>
           </RevealWrapper>
         </div>
 
         <RevealWrapper delay={1}>
-          <p style={{ fontSize: 16, lineHeight: 1.8, color: '#5A7A6A', textAlign: 'center', maxWidth: 560, margin: '0 auto 60px' }}>
+          <p className="section-desc" style={{ color: '#5A7A6A' }}>
             精心整理的教学资料，助力普通话推广与乡村教育发展
           </p>
         </RevealWrapper>
@@ -99,10 +91,14 @@ export default function MaterialsSection() {
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLDivElement).style.background = '#fff';
                       (e.currentTarget as HTMLDivElement).style.borderLeft = '3px solid #6BAF92';
+                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 20px rgba(0,0,0,0.08)';
                     }}
                     onMouseLeave={(e) => {
                       (e.currentTarget as HTMLDivElement).style.background = 'rgba(255, 255, 255, 0.7)';
                       (e.currentTarget as HTMLDivElement).style.borderLeft = '1px solid rgba(255,255,255,0.3)';
+                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
                     }}
                   >
                     <div style={{ width: 44, height: 44, borderRadius: 12, background: meta.bgColor, color: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
@@ -132,7 +128,7 @@ export default function MaterialsSection() {
         )}
       </div>
 
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(180deg, transparent, rgba(139, 188, 156, 0.6), #8BBC9C)', pointerEvents: 'none' }} />
+      <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent, #7CB342)' }} />
     </section>
   );
 }

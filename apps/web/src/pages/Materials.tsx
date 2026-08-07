@@ -38,7 +38,7 @@ export default function MaterialsPage() {
   };
 
   return (
-    <PageLayout title="推普资料" background="linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%)">
+    <PageLayout title="推普资料" backTo="/#materials" background="linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%)">
       <RevealWrapper>
         <h1 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: '#2C3E33', textAlign: 'center', marginBottom: 16, letterSpacing: '-0.02em' }}>
           推普资料

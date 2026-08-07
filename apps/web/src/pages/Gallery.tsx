@@ -33,7 +33,7 @@ export default function GalleryPage() {
   };
 
   return (
-    <PageLayout title="儿童画展" background="linear-gradient(180deg, #C8E6C9 0%, #6BAF92 50%, #8BBC9C 100%)">
+    <PageLayout title="儿童画展" backTo="/#gallery" background="linear-gradient(180deg, #C8E6C9 0%, #6BAF92 50%, #8BBC9C 100%)">
       <RevealWrapper>
         <h1 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: '#FAF9F6', textAlign: 'center', marginBottom: 16, letterSpacing: '-0.02em', textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           儿童画展

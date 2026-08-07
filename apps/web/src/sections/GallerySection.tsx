@@ -37,31 +37,24 @@ export default function GallerySection() {
     <section
       id="gallery"
       style={{
-        background: 'linear-gradient(180deg, #8BBC9C 0%, #6BAF92 50%, #7CBF9A 100%)',
-        padding: '100px 24px',
+        background: '#7CB342',
+        padding: '55px 24px',
         position: 'relative',
       }}
     >
-      <div className="container" style={{ maxWidth: 1200, margin: '0 auto' }}>
+      <div className="container" style={{ maxWidth: 1100, margin: '0 auto' }}>
         {/* 标题 + 了解更多 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+        <div className="section-header">
           <RevealWrapper>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 700, lineHeight: 1.2, color: '#FAF9F6', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-              儿童画展
-            </h2>
+            <h2 className="section-title" style={{ color: '#FAF9F6', textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>儿童画展</h2>
           </RevealWrapper>
           <RevealWrapper delay={1}>
-            <button
-              onClick={() => navigate('/gallery')}
-              style={{ padding: '10px 24px', fontSize: 14, borderRadius: 28, border: '1px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', transition: 'all 0.3s ease' }}
-            >
-              了解更多 →
-            </button>
+            <button onClick={() => navigate('/gallery')} className="section-link-light">了解更多 →</button>
           </RevealWrapper>
         </div>
 
         <RevealWrapper delay={1}>
-          <p style={{ fontSize: 16, lineHeight: 1.8, color: 'rgba(250, 249, 246, 0.8)', textAlign: 'center', maxWidth: 560, margin: '0 auto 60px' }}>
+          <p className="section-desc" style={{ color: 'rgba(250, 249, 246, 0.9)' }}>
             孩子们用画笔描绘心中的世界，每一幅作品都闪耀着纯真的光芒
           </p>
         </RevealWrapper>
@@ -142,7 +135,7 @@ export default function GallerySection() {
         div:hover > .gallery-overlay { opacity: 1 !important; }
       `}</style>
 
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(180deg, transparent, rgba(156, 186, 138, 0.6), #9CBA8A)', pointerEvents: 'none' }} />
+      <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent, #7CB342)' }} />
     </section>
   );
 }

@@ -34,32 +34,24 @@ export default function VideosSection() {
     <section
       id="videos"
       style={{
-        background: 'linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%)',
-        padding: '100px 24px',
+        background: '#E8F5E9',
+        padding: '55px 24px',
         position: 'relative',
       }}
     >
-      <div className="container" style={{ maxWidth: 1200, margin: '0 auto' }}>
+      <div className="container" style={{ maxWidth: 1100, margin: '0 auto' }}>
         {/* 标题 + 了解更多 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+        <div className="section-header">
           <RevealWrapper>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 700, lineHeight: 1.2, color: '#2C3E33', margin: 0 }}>
-              示范课程
-            </h2>
+            <h2 className="section-title" style={{ color: '#2C3E33' }}>示范课程</h2>
           </RevealWrapper>
           <RevealWrapper delay={1}>
-            <button
-              onClick={() => navigate('/videos')}
-              className="btn-secondary"
-              style={{ padding: '10px 24px', fontSize: 14 }}
-            >
-              了解更多 →
-            </button>
+            <button onClick={() => navigate('/videos')} className="btn-secondary" style={{ padding: '10px 24px', fontSize: 14 }}>了解更多 →</button>
           </RevealWrapper>
         </div>
 
         <RevealWrapper delay={1}>
-          <p style={{ fontSize: 16, lineHeight: 1.8, color: '#6A7A6A', textAlign: 'center', maxWidth: 560, margin: '0 auto 60px' }}>
+          <p className="section-desc" style={{ color: '#6A7A6A' }}>
             精心设计的课程内容，涵盖语文、数学、美术和科学等多个领域
           </p>
         </RevealWrapper>
@@ -124,7 +116,7 @@ export default function VideosSection() {
         </div>
       </Modal>
 
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(180deg, transparent, rgba(200, 230, 201, 0.6), #C8E6C9)', pointerEvents: 'none' }} />
+      <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent, #C8E6C9)' }} />
     </section>
   );
 }

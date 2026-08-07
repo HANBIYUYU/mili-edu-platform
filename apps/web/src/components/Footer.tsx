@@ -2,8 +2,8 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: '#2C3E33',
-        padding: '60px 24px 40px',
+        background: '#2C3E50',
+        padding: '40px 24px 32px',
       }}
     >
       <div className="container" style={{ maxWidth: 1200, margin: '0 auto' }}>
@@ -22,7 +22,7 @@ export default function Footer() {
               fontWeight: 800,
               color: '#FAF9F6',
               letterSpacing: '-0.02em',
-              marginBottom: 12,
+              marginBottom: 8,
             }}
           >
             <img src="/logo.png" alt="米粒支教社" style={{ height: 54, width: 'auto', marginBottom: 12 }} /><br />米粒支教社
@@ -31,8 +31,8 @@ export default function Footer() {
           <p
             style={{
               fontSize: 14,
-              color: '#8A9E8F',
-              marginBottom: 32,
+              color: 'rgba(255, 255, 255, 0.8)',
+              marginBottom: 20,
             }}
           >
             点亮每一颗微光，汇聚成改变世界的力量
@@ -43,7 +43,7 @@ export default function Footer() {
             style={{
               display: 'flex',
               gap: 32,
-              marginBottom: 40,
+              marginBottom: 24,
               flexWrap: 'wrap',
               justifyContent: 'center',
             }}
@@ -61,15 +61,18 @@ export default function Footer() {
                   href={href}
                   style={{
                     fontSize: 14,
-                    color: '#8A9E8F',
+                    color: 'rgba(255, 255, 255, 0.7)',
                     textDecoration: 'none',
-                    transition: 'color 0.3s ease',
+                    display: 'inline-block',
+                    transition: 'all 0.3s ease',
                   }}
                   onMouseEnter={(e) => {
-                    (e.target as HTMLAnchorElement).style.color = '#6BAF92';
+                    (e.target as HTMLAnchorElement).style.color = '#FAF9F6';
+                    (e.target as HTMLAnchorElement).style.transform = 'translateY(-2px)';
                   }}
                   onMouseLeave={(e) => {
-                    (e.target as HTMLAnchorElement).style.color = '#8A9E8F';
+                    (e.target as HTMLAnchorElement).style.color = 'rgba(255, 255, 255, 0.7)';
+                    (e.target as HTMLAnchorElement).style.transform = 'translateY(0)';
                   }}
                 >
                   {label}
@@ -84,7 +87,7 @@ export default function Footer() {
               width: '100%',
               maxWidth: 400,
               height: 1,
-              background: 'rgba(138, 158, 143, 0.2)',
+              background: 'rgba(255, 255, 255, 0.2)',
               marginBottom: 24,
             }}
           />
@@ -93,7 +96,7 @@ export default function Footer() {
           <div
             style={{
               fontSize: 13,
-              color: '#5A7A6A',
+              color: 'rgba(255, 255, 255, 0.5)',
             }}
           >
             © 2026 米粒支教社 · 保留所有权利
@@ -103,7 +106,7 @@ export default function Footer() {
             href="/admin/login"
             style={{
               fontSize: 12,
-              color: '#5A7A6A',
+              color: 'rgba(255, 255, 255, 0.4)',
               textDecoration: 'none',
               marginTop: 12,
               opacity: 0.5,

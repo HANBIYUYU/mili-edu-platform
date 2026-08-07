@@ -36,7 +36,7 @@ export default function ContactPage() {
   };
 
   return (
-    <PageLayout title="联系我们" background="linear-gradient(180deg, #6BAF92 0%, #F5A623 60%, #F5D89A 100%)">
+    <PageLayout title="联系我们" backTo="/#contact" background="linear-gradient(180deg, #6BAF92 0%, #F5A623 60%, #F5D89A 100%)">
       <RevealWrapper>
         <h1 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: '#fff', textAlign: 'center', marginBottom: 16, letterSpacing: '-0.02em', textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           联系我们

@@ -4,41 +4,32 @@ import CountUp from '../components/CountUp';
 import RevealWrapper from '../components/RevealWrapper';
 
 const stats = [
+  { value: 6, label: '长期实践基地', suffix: '处' },
   { value: 128, label: '支教志愿者', suffix: '位' },
-  { value: 36, label: '覆盖学校', suffix: '所' },
   { value: 5000, label: '受益儿童', suffix: '+' },
-  { value: 12, label: '合作省份', suffix: '个' },
-];
-
-const milestones = [
-  { year: '2018', title: '社团成立', desc: '米粒支教社在上海正式成立，第一批志愿者踏上支教之路。' },
-  { year: '2019', title: '首次夏令营', desc: '举办第一届暑期支教夏令营，覆盖 3 所学校、200+ 儿童。' },
-  { year: '2020', title: '线上转型', desc: '疫情之下开启线上课程模式，累计录制课程 50+ 节。' },
-  { year: '2022', title: '推普计划', desc: '启动普通话推广专项计划，覆盖 8 个偏远地区学校。' },
-  { year: '2024', title: '知行杯', desc: '入选"知行杯"暑期社会实践项目，影响力持续扩大。' },
-  { year: '2026', title: '数字平台', desc: '上线数字化平台，整合课程、资料、画展等资源。' },
+  { value: 14, label: '深耕乡村', suffix: '年' },
 ];
 
 export default function AboutPage() {
   const navigate = useNavigate();
 
   return (
-    <PageLayout title="关于我们">
+    <PageLayout title="关于我们" backTo="/#about">
       {/* 使命宣言 */}
       <section style={{ marginBottom: 80 }}>
         <RevealWrapper>
           <h1 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: '#2C3E33', textAlign: 'center', marginBottom: 24, letterSpacing: '-0.02em' }}>
-            我们的使命
+            关注成长，为爱助跑
           </h1>
         </RevealWrapper>
         <RevealWrapper delay={1}>
           <p style={{ fontSize: 18, lineHeight: 2, color: '#6A7A6A', textAlign: 'center', maxWidth: 720, margin: '0 auto 20px' }}>
-            米粒支教社致力于为偏远地区儿童提供优质教育资源。
+            上海大学米粒支教社成立于2013年，致力于推广延续性支教活动，为全校支教队伍提供全方位支教前后期服务，
+            以及通过各类长期项目解决短期支教的弊端。
           </p>
           <p style={{ fontSize: 16, lineHeight: 2, color: '#6A7A6A', textAlign: 'center', maxWidth: 720, margin: '0 auto 60px' }}>
-            我们相信，每一份微小的力量都能汇聚成改变世界的光芒。从最初的几名志愿者到如今遍布全国的支教网络，
-            米粒支教社始终秉持「以教育连接世界，以爱心点亮未来」的理念。通过志愿者支教、在线课程、推普活动
-            和儿童艺术教育，我们努力让知识的光芒照进每一个角落。
+            目前社团长期运营的项目有：「为爱助跑」暑期支教项目、蓝信封通信大使项目、「童年一课」线上支教项目。
+            我们相信，每一份微小的力量都能汇聚成改变世界的光芒，让知识的光芒照进每一个角落。
           </p>
         </RevealWrapper>
 
@@ -57,29 +48,33 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 发展历程 */}
+      {/* 项目介绍 */}
       <section style={{ marginBottom: 80 }}>
         <RevealWrapper>
           <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 700, color: '#2C3E33', textAlign: 'center', marginBottom: 48 }}>
-            发展历程
+            项目介绍
           </h2>
         </RevealWrapper>
-        <div style={{ maxWidth: 700, margin: '0 auto', position: 'relative' }}>
-          <div style={{ position: 'absolute', left: 32, top: 0, bottom: 0, width: 2, background: 'rgba(107, 175, 146, 0.2)' }} />
-          {milestones.map((m, index) => (
-            <RevealWrapper key={m.year} delay={index}>
-              <div style={{ position: 'relative', paddingLeft: 80, marginBottom: 40 }}>
-                <div style={{
-                  position: 'absolute', left: 24, top: 4, width: 18, height: 18, borderRadius: '50%',
-                  background: '#6BAF92', border: '3px solid #FAF9F6',
-                  boxShadow: '0 2px 8px rgba(107, 175, 146, 0.3)',
-                }} />
-                <div style={{ fontSize: 13, color: '#6BAF92', fontWeight: 700, marginBottom: 4 }}>{m.year}</div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: '#2C3E33', marginBottom: 6 }}>{m.title}</h3>
-                <p style={{ fontSize: 15, lineHeight: 1.7, color: '#6A7A6A', margin: 0 }}>{m.desc}</p>
-              </div>
-            </RevealWrapper>
-          ))}
+        <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <RevealWrapper delay={1}>
+            <p style={{ fontSize: 16, lineHeight: 2, color: '#6A7A6A', marginBottom: 24 }}>
+              上海大学米粒支教社深耕乡村公益十四年，组建跨专业青年实践队伍，已经在四川凉山、云南虎跳峡、
+              浙江文成、河南商丘、河南信阳、浙江绍兴六处地区建立长期乡村实践基地，常态化开展「支教 + 推普」长效教育帮扶。
+            </p>
+            <p style={{ fontSize: 16, lineHeight: 2, color: '#6A7A6A', marginBottom: 24 }}>
+              项目联合「共青团伙伴计划」，搭建「课业辅导 + 素质美育 + 推普专项 + 入户家访」一体化服务体系，
+              结合在地资源开设乡土文化、低空科普、红色研学等特色课程，配套趣味运动会、成果汇演等拓展活动。
+            </p>
+            <p style={{ fontSize: 16, lineHeight: 2, color: '#6A7A6A', marginBottom: 24 }}>
+              同步开展实地调研，摸排各地推普现实需求、乡村儿童成长困境，破解短期支教服务断档难题，
+              搭建线上结对、年度回访的可持续接力帮扶机制。
+            </p>
+            <p style={{ fontSize: 16, lineHeight: 2, color: '#6A7A6A' }}>
+              项目配备跨学科专业指导教师，拥有标准化队员培育、物资筹备全流程体系，每年产出多地专项调研报告、
+              特色教学案例与公益纪实成果，以跨区域多点深耕模式助力乡村教育公平与国家通用语言文字推广，
+              打造可复制、可持续的高校乡村振兴公益实践品牌。
+            </p>
+          </RevealWrapper>
         </div>
       </section>
 
@@ -108,7 +103,7 @@ export default function AboutPage() {
       {/* CTA */}
       <div style={{ textAlign: 'center', paddingBottom: 20 }}>
         <p style={{ fontSize: 16, color: '#6A7A6A', marginBottom: 24 }}>想了解更多，或加入我们的团队？</p>
-        <button onClick={() => navigate('/contact')} className="btn-primary">
+        <button onClick={() => navigate('/#contact')} className="btn-primary">
           联系我们
         </button>
       </div>

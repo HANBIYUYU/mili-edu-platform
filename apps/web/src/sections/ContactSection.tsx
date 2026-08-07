@@ -31,8 +31,8 @@ export default function ContactSection() {
     <section
       id="contact"
       style={{
-        background: 'linear-gradient(180deg, #9CBA8A 0%, #B8C89A 30%, #F5C76E 70%, #F5D89A 100%)',
-        padding: '100px 24px',
+        background: 'linear-gradient(180deg, #7CB342 0%, #F5A623 55%, #F5C76E 100%)',
+        padding: '55px 24px',
         position: 'relative',
       }}
     >
@@ -56,7 +56,7 @@ export default function ContactSection() {
               <h3 style={{ fontSize: 20, fontWeight: 600, color: '#fff', marginBottom: 24 }}>联系方式</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {contactInfo.map((item) => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.2)' }}>
+                  <div key={item.label} className="contact-info-card" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.2)', transition: 'all 0.3s ease', cursor: 'default' }}>
                     <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.25)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
                       {item.icon}
                     </div>
@@ -98,6 +98,30 @@ export default function ContactSection() {
           </RevealWrapper>
         </div>
       </div>
+
+      <style>{`
+        .contact-info-card:hover {
+          background: rgba(255,255,255,0.28) !important;
+          border-color: rgba(255,255,255,0.5) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .contact-form-card input:hover,
+        .contact-form-card textarea:hover {
+          border-color: #7CB342 !important;
+        }
+        .contact-form-card input:focus,
+        .contact-form-card textarea:focus {
+          border-color: #7CB342 !important;
+          box-shadow: 0 0 0 2px rgba(124, 179, 66, 0.15) !important;
+        }
+        .contact-form-card .ant-btn-primary:hover {
+          background: #E89620 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(245, 166, 35, 0.45) !important;
+        }
+      `}</style>
+
     </section>
   );
 }

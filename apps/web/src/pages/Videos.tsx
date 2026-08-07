@@ -33,7 +33,7 @@ export default function VideosPage() {
   };
 
   return (
-    <PageLayout title="示范课程" background="linear-gradient(180deg, #FAF9F6 0%, #E8F5E9 100%)">
+    <PageLayout title="示范课程" backTo="/#videos" background="linear-gradient(180deg, #FAF9F6 0%, #E8F5E9 100%)">
       <RevealWrapper>
         <h1 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: '#2C3E33', textAlign: 'center', marginBottom: 16, letterSpacing: '-0.02em' }}>
           示范课程

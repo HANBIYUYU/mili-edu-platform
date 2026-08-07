@@ -16,43 +16,26 @@ export default function AboutSection() {
       id="about"
       style={{
         background: '#FAF9F6',
-        padding: '100px 24px',
+        padding: '55px 24px',
         position: 'relative',
       }}
     >
       <div className="container" style={{ maxWidth: 1100, margin: '0 auto' }}>
         {/* 标题 + 了解更多 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+        <div className="section-header">
           <RevealWrapper>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 700, lineHeight: 1.2, color: '#2C3E33', margin: 0 }}>
-              我们的使命
-            </h2>
+            <h2 className="section-title" style={{ color: '#2C3E33' }}>关注成长，为爱助跑</h2>
           </RevealWrapper>
           <RevealWrapper delay={1}>
-            <button
-              onClick={() => navigate('/about')}
-              className="btn-secondary"
-              style={{ padding: '10px 24px', fontSize: 14 }}
-            >
-              了解更多 →
-            </button>
+            <button onClick={() => navigate('/about')} className="btn-secondary" style={{ padding: '10px 24px', fontSize: 14 }}>了解更多 →</button>
           </RevealWrapper>
         </div>
 
         <RevealWrapper delay={1}>
-          <p
-            style={{
-              fontSize: 16,
-              lineHeight: 1.8,
-              color: '#6A7A6A',
-              textAlign: 'center',
-              maxWidth: 640,
-              margin: '0 auto 40px',
-            }}
-          >
-            米粒支教社致力于为偏远地区儿童提供优质教育资源。
-            我们相信，每一份微小的力量都能汇聚成改变世界的光芒。
-            通过志愿者支教、在线课程和推普活动，让知识的光芒照进每一个角落。
+          <p className="section-desc" style={{ color: '#6A7A6A', maxWidth: 640 }}>
+            上海大学米粒支教社成立于2013年，致力于推广延续性支教活动，
+            为全校支教队伍提供全方位支教前后期服务。
+            目前运营「为爱助跑」暑期支教、蓝信封通信大使、「童年一课」线上支教等长期项目。
           </p>
           {/* 装饰分隔线 */}
           <div style={{ width: 60, height: 3, borderRadius: 2, background: '#6BAF92', margin: '0 auto 60px', opacity: 0.4 }} />
@@ -102,17 +85,7 @@ export default function AboutSection() {
       </div>
 
       {/* 过渡到 Videos */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 200,
-          background: 'linear-gradient(180deg, transparent, rgba(232, 245, 233, 0.6), #E8F5E9)',
-          pointerEvents: 'none',
-        }}
-      />
+      <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent, #E8F5E9)' }} />
     </section>
   );
 }

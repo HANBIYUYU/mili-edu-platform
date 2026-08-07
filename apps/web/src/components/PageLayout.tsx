@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Footer from './Footer';
 
@@ -6,10 +6,16 @@ interface PageLayoutProps {
   title: string;
   background?: string;
   children: ReactNode;
+  /** 返回首页时滚动到的锚点，如 '/#about' */
+  backTo?: string;
 }
 
-export default function PageLayout({ title, background = '#FAF9F6', children }: PageLayoutProps) {
+export default function PageLayout({ title, background = '#FAF9F6', children, backTo = '/' }: PageLayoutProps) {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, []);
 
   return (
     <div style={{ background, minHeight: '100vh' }}>
@@ -34,7 +40,7 @@ export default function PageLayout({ title, background = '#FAF9F6', children }: 
       >
         {/* Logo + 返回首页 */}
         <div
-          onClick={() => navigate('/')}
+          onClick={() => navigate(backTo)}
           style={{
             fontSize: 20,
             fontWeight: 800,
@@ -55,7 +61,7 @@ export default function PageLayout({ title, background = '#FAF9F6', children }: 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontSize: 15, fontWeight: 600, color: '#6BAF92' }}>{title}</span>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(backTo)}
             style={{
               padding: '8px 20px',
               fontSize: 13,
