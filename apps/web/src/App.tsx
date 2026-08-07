@@ -1,11 +1,5 @@
-import { Routes, Route } from 'react-router-dom'
-import MainLayout from './components/MainLayout'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
-import About from './pages/About'
-import Videos from './pages/Videos'
-import Materials from './pages/Materials'
-import Gallery from './pages/Gallery'
-import Contact from './pages/Contact'
 import AdminLayout from './components/AdminLayout'
 import AdminLogin from './pages/Admin/Login'
 import AdminDashboard from './pages/Admin/Dashboard'
@@ -17,15 +11,17 @@ import AdminContacts from './pages/Admin/Contacts'
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<Home />} />
-        <Route path="about" element={<About />} />
-        <Route path="videos" element={<Videos />} />
-        <Route path="materials" element={<Materials />} />
-        <Route path="gallery" element={<Gallery />} />
-        <Route path="contact" element={<Contact />} />
-      </Route>
-      
+      {/* 前台：长滚动单页 */}
+      <Route path="/" element={<Home />} />
+
+      {/* 旧路由重定向到首页锚点 */}
+      <Route path="/about" element={<Navigate to="/#about" replace />} />
+      <Route path="/videos" element={<Navigate to="/#videos" replace />} />
+      <Route path="/materials" element={<Navigate to="/#materials" replace />} />
+      <Route path="/gallery" element={<Navigate to="/#gallery" replace />} />
+      <Route path="/contact" element={<Navigate to="/#contact" replace />} />
+
+      {/* 管理后台保持不变 */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="login" element={<AdminLogin />} />
         <Route path="dashboard" element={<AdminDashboard />} />
