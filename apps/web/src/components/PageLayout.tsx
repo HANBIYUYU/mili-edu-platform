@@ -8,9 +8,11 @@ interface PageLayoutProps {
   children: ReactNode;
   /** 返回首页时滚动到的锚点，如 '/#about' */
   backTo?: string;
+  /** 返回按钮文案，如 '返回课程列表' */
+  backLabel?: string;
 }
 
-export default function PageLayout({ title, background = '#FAF9F6', children, backTo = '/' }: PageLayoutProps) {
+export default function PageLayout({ title, background = '#FAF9F6', children, backTo = '/', backLabel = '返回首页' }: PageLayoutProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,7 +85,7 @@ export default function PageLayout({ title, background = '#FAF9F6', children, ba
               (e.currentTarget as HTMLButtonElement).style.color = '#6A7A6A';
             }}
           >
-            ← 返回首页
+            ← {backLabel}
           </button>
         </div>
       </nav>

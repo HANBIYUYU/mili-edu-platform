@@ -4,10 +4,9 @@ import CountUp from '../components/CountUp';
 import RevealWrapper from '../components/RevealWrapper';
 
 const stats = [
-  { value: 6, label: '长期实践基地', suffix: '处' },
-  { value: 128, label: '支教志愿者', suffix: '位' },
-  { value: 5000, label: '受益儿童', suffix: '+' },
-  { value: 14, label: '深耕乡村', suffix: '年' },
+  { value: 300, label: '支教志愿者', suffix: '+' },
+  { value: 7, label: '覆盖学校', suffix: '所' },
+  { value: 2000, label: '受益儿童', suffix: '+' },
 ];
 
 export default function AboutPage() {

@@ -30,6 +30,8 @@ export default function AdminLayout() {
     { key: '/admin/videos', label: <Link to="/admin/videos">视频管理</Link> },
     { key: '/admin/materials', label: <Link to="/admin/materials">资料管理</Link> },
     { key: '/admin/gallery', label: <Link to="/admin/gallery">画展管理</Link> },
+    { key: '/admin/voices', label: <Link to="/admin/voices">童声童语管理</Link> },
+    { key: '/admin/moments', label: <Link to="/admin/moments">支教拾光管理</Link> },
     { key: '/admin/contacts', label: <Link to="/admin/contacts">留言管理</Link> },
   ]
   

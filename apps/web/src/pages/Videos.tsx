@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Modal, Skeleton, Empty, Tag } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { Skeleton, Empty, Tag } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import PageLayout from '../components/PageLayout';
 import RevealWrapper from '../components/RevealWrapper';
@@ -12,11 +13,10 @@ const categoryMeta: Record<string, { color: string; icon: string }> = {
 const defaultMeta = { color: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)', icon: '🎬' };
 
 export default function VideosPage() {
+  const navigate = useNavigate();
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('全部');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentVideo, setCurrentVideo] = useState('');
 
   useEffect(() => {
     videoAPI.list().then((res: any) => {
@@ -26,11 +26,6 @@ export default function VideosPage() {
 
   const categories = ['全部', ...new Set(videos.map((v) => v.category).filter(Boolean))];
   const filteredVideos = filter === '全部' ? videos : videos.filter((v) => v.category === filter);
-
-  const openVideo = (url: string) => {
-    setCurrentVideo(url);
-    setModalOpen(true);
-  };
 
   return (
     <PageLayout title="示范课程" backTo="/#videos" background="linear-gradient(180deg, #FAF9F6 0%, #E8F5E9 100%)">
@@ -89,7 +84,7 @@ export default function VideosPage() {
                 <div
                   className="glow-card"
                   style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
-                  onClick={() => openVideo(v.iframe_src)}
+                  onClick={() => navigate(`/videos/${v.id}`)}
                 >
                   <div style={{ height: 180, background: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', fontSize: 56 }}>
                     {meta.icon}
@@ -107,24 +102,6 @@ export default function VideosPage() {
           })}
         </div>
       )}
-
-      <Modal
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        footer={null}
-        width={860}
-        centered
-        styles={{ body: { padding: 0, borderRadius: 16, overflow: 'hidden' } }}
-      >
-        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-          <iframe
-            src={currentVideo}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      </Modal>
     </PageLayout>
   );
 }

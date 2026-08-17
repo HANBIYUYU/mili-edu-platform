@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 
-const sections = ['about', 'videos', 'materials', 'gallery', 'contact'];
+const sections = ['moments', 'about', 'videos', 'materials', 'voices', 'gallery', 'contact'];
 
 export default function FloatingNext() {
   const [current, setCurrent] = useState(0);
@@ -8,12 +8,13 @@ export default function FloatingNext() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // 判断当前所在 section
+      // 判断当前所在 section（要求区块同时覆盖参考线，避免短区块误判）
       for (let i = sections.length - 1; i >= 0; i--) {
         const el = document.getElementById(sections[i]);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= window.innerHeight * 0.5) {
+          const line = window.innerHeight * 0.5;
+          if (rect.top <= line && rect.bottom > line) {
             setCurrent(i);
             break;
           }

@@ -2,9 +2,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { MenuOutlined, CloseOutlined } from '@ant-design/icons';
 
 const navItems = [
+  { id: 'moments', label: '支教拾光' },
   { id: 'about', label: '关于我们' },
   { id: 'videos', label: '示范课程' },
   { id: 'materials', label: '推普资料' },
+  { id: 'voices', label: '童声童语' },
   { id: 'gallery', label: '儿童画展' },
   { id: 'contact', label: '联系我们' },
 ];
@@ -18,13 +20,13 @@ export default function TransparentNav() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 60);
 
-      // 计算当前所在 Section
-      const sectionIds = ['about', 'videos', 'materials', 'gallery', 'contact'];
+      // 计算当前所在 Section（参考线取导航下方 200px，要求区块同时覆盖参考线上下，避免短区块提前抢占高亮）
+      const sectionIds = ['moments', 'about', 'videos', 'materials', 'voices', 'gallery', 'contact'];
       for (let i = sectionIds.length - 1; i >= 0; i--) {
         const el = document.getElementById(sectionIds[i]);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 200) {
+          if (rect.top <= 200 && rect.bottom > 200) {
             setActiveSection(sectionIds[i]);
             break;
           }
@@ -94,7 +96,7 @@ export default function TransparentNav() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 32,
+            gap: 24,
           }}
           className="nav-desktop"
         >
@@ -105,7 +107,8 @@ export default function TransparentNav() {
               style={{
                 background: 'none',
                 border: 'none',
-                fontSize: 15,
+                fontSize: 14,
+                whiteSpace: 'nowrap',
                 fontWeight: 500,
                 color: activeSection === item.id ? '#6BAF92' : scrolled ? '#5a6a5a' : '#5a6a5a',
                 cursor: 'pointer',

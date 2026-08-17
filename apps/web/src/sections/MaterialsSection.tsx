@@ -128,7 +128,7 @@ export default function MaterialsSection() {
         )}
       </div>
 
-      <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent, #7CB342)' }} />
+      <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent, #AED581)' }} />
     </section>
   );
 }

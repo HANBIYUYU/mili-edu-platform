@@ -1,32 +1,38 @@
 import { useState, useEffect } from 'react'
 import { Card, Statistic, Row, Col, Spin } from 'antd'
 import { VideoCameraOutlined, FileTextOutlined, PictureOutlined, MessageOutlined } from '@ant-design/icons'
-import { videoAPI, materialAPI, artworkAPI, contactAPI } from '../../api'
+import { videoAPI, materialAPI, artworkAPI, voiceAPI, momentAPI, contactAPI } from '../../api'
 
 interface Stats {
   videos: number
   materials: number
   artworks: number
+  voices: number
+  moments: number
   contacts: number
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({ videos: 0, materials: 0, artworks: 0, contacts: 0 })
+  const [stats, setStats] = useState<Stats>({ videos: 0, materials: 0, artworks: 0, voices: 0, moments: 0, contacts: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [videos, materials, artworks, contacts] = await Promise.all([
+        const [videos, materials, artworks, voices, moments, contacts] = await Promise.all([
           videoAPI.list(),
           materialAPI.list(),
           artworkAPI.list(),
+          voiceAPI.list(),
+          momentAPI.list(),
           contactAPI.list(),
         ])
         setStats({
           videos: (videos as any).data?.length ?? 0,
           materials: (materials as any).data?.length ?? 0,
           artworks: (artworks as any).data?.length ?? 0,
+          voices: (voices as any).data?.length ?? 0,
+          moments: (moments as any).data?.length ?? 0,
           contacts: (contacts as any).data?.length ?? 0,
         })
       } catch (err) {
@@ -68,6 +74,24 @@ export default function AdminDashboard() {
                 title="作品数量"
                 value={stats.artworks}
                 prefix={<PictureOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card>
+              <Statistic
+                title="童声数量"
+                value={stats.voices}
+                prefix={<span style={{ fontSize: 16 }}>🎤</span>}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card>
+              <Statistic
+                title="拾光照片"
+                value={stats.moments}
+                prefix={<span style={{ fontSize: 16 }}>📷</span>}
               />
             </Card>
           </Col>

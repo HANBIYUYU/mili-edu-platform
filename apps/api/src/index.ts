@@ -5,6 +5,8 @@ import authRoutes from './routes/auth'
 import videoRoutes from './routes/videos'
 import materialRoutes from './routes/materials'
 import artworkRoutes from './routes/artworks'
+import voiceRoutes from './routes/voices'
+import momentRoutes from './routes/moments'
 import contactRoutes from './routes/contact'
 import uploadRoutes from './routes/upload'
 
@@ -30,6 +32,8 @@ app.route('/api/auth', authRoutes)
 app.route('/api/videos', videoRoutes)
 app.route('/api/materials', materialRoutes)
 app.route('/api/artworks', artworkRoutes)
+app.route('/api/voices', voiceRoutes)
+app.route('/api/moments', momentRoutes)
 app.route('/api/contact-forms', contactRoutes)
 app.route('/api/upload', uploadRoutes)
 

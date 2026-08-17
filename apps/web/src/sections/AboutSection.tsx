@@ -3,9 +3,9 @@ import RevealWrapper from '../components/RevealWrapper';
 import CountUp from '../components/CountUp';
 
 const stats = [
-  { value: 128, label: '支教志愿者', suffix: '位' },
-  { value: 36, label: '覆盖学校', suffix: '所' },
-  { value: 5000, label: '受益儿童', suffix: '+' },
+  { value: 300, label: '支教志愿者', suffix: '+' },
+  { value: 7, label: '覆盖学校', suffix: '所' },
+  { value: 2000, label: '受益儿童', suffix: '+' },
 ];
 
 export default function AboutSection() {

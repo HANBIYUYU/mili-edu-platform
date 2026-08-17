@@ -37,7 +37,7 @@ pnpm clean            # 删除所有 node_modules
 ### API（`apps/api`）— Cloudflare Workers + Hono + D1
 
 - 入口：`apps/api/src/index.ts` — 创建 Hono app，注册全局中间件（`logger`、`cors`）和路由，配置错误处理。
-- 所有路由挂载在 `/api` 前缀下：`auth`、`videos`、`materials`、`artworks`、`contact-forms`、`upload`。
+- 所有路由挂载在 `/api` 前缀下：`auth`、`videos`、`materials`、`artworks`、`voices`、`moments`、`contact-forms`、`upload`。
 - **认证**：JWT（`jose` 库），通过 httpOnly cookie（`token`）传递。`authMiddleware`（`src/middleware/auth.ts`）验证 cookie 中的 JWT 并设置 `c.set('user', payload)`。仅对写操作（POST/PUT/DELETE）要求认证；公开的 GET 端点无需认证。
 - **数据库**：Cloudflare D1，通过 `c.env.DB` 访问。SQLite 语法。Migration 文件在 `apps/api/migrations/`。类型定义在 `apps/api/src/types.ts`。
 - **环境变量**：`WEBHOOK_URL`（企微机器人 webhook，当前为空字符串）、`JWT_SECRET`（开发默认值，生产环境务必修改）。
@@ -47,8 +47,8 @@ pnpm clean            # 删除所有 node_modules
 
 - 入口：`apps/web/src/main.tsx` — React 18、BrowserRouter、Ant Design ConfigProvider（中文语言包，主题色 `#6BAF92`）。
 - 路由定义在 `apps/web/src/App.tsx`：
-  - 前台：`/`（Home 长滚动单页）、`/about`、`/videos`、`/materials`、`/gallery`、`/contact`（重定向到 `/#contact`）
-  - 后台：`/admin` → `AdminLayout`，包含 login、dashboard、videos、materials、gallery、contacts
+  - 前台：`/`（Home 长滚动单页）、`/about`、`/videos`、`/videos/:id`（视频详情页）、`/materials`、`/voices`（童声童语）、`/gallery`、`/contact`（重定向到 `/#contact`）
+  - 后台：`/admin` → `AdminLayout`，包含 login、dashboard、videos、materials、gallery、voices、moments、contacts
 - API 客户端：`apps/web/src/api/index.ts` — axios 实例，baseURL 默认为 `/api`，`withCredentials: true`。401 响应自动重定向到 `/admin/login`。
 
 ### 前台组件结构
@@ -57,9 +57,11 @@ pnpm clean            # 删除所有 node_modules
 Home.tsx                        ← 长滚动单页
 ├── TransparentNav.tsx          ← 固定顶部导航（初始透明 → 滚动后毛玻璃米白）
 ├── sections/HeroSection.tsx    ← 暖黄渐变 Hero、装饰光晕/光带、滚动弹跳提示
+├── sections/MomentsSection.tsx ← 暖纸色底、支教拾光、年份数字平铺 + 悬浮弹窗看照片
 ├── sections/AboutSection.tsx   ← 米白底、使命文案、统计卡片
-├── sections/VideosSection.tsx  ← 浅绿底、视频卡片网格、Modal 播放
+├── sections/VideosSection.tsx  ← 浅绿底、视频卡片网格、Modal 悬浮播放（独立页 /videos 卡片跳详情页）
 ├── sections/MaterialsSection.tsx ← 暖绿底、资料列表、下载按钮
+├── sections/VoicesSection.tsx  ← 中间绿底、童声童语卡片网格、图片灯箱/视频弹窗
 ├── sections/GallerySection.tsx ← 亮绿底、画展网格、Lightbox
 ├── sections/ContactSection.tsx ← 绿→橙黄渐变、联系卡片 + 留言表单
 ├── FloatingNext.tsx            ← 固定底部悬浮 pill（自动检测 section，最后一节变返回起点）
@@ -67,7 +69,7 @@ Home.tsx                        ← 长滚动单页
 └── BackToTop.tsx               ← 回到顶部按钮
 
 独立页面（pages/）:
-├── About.tsx, Videos.tsx, Materials.tsx, Gallery.tsx, Contact.tsx
+├── About.tsx, Videos.tsx, Materials.tsx, Voices.tsx, Gallery.tsx, Contact.tsx
 └── 均使用 PageLayout.tsx 包裹（固定毛玻璃顶栏 + backTo 锚点返回 + Footer）
 ```
 
@@ -86,9 +88,11 @@ Home.tsx                        ← 长滚动单页
 **Section 颜色渐变链**（自上而下）：
 ```
 Hero:     暖黄渐变  #EDCC80 → #F5D89A → #F5E6C8 → #F5C76E
+Moments:  暖纸色   #F8EBD4
 About:    米白     #FAF9F6
 Videos:   浅绿     #E8F5E9
 Materials: 暖绿    #C8E6C9
+Voices:   中间绿   #AED581
 Gallery:  亮绿     #7CB342
 Contact:  绿→橙黄  #7CB342 → #F5A623 → #F5C76E
 Footer:   深色     #2C3E50
@@ -101,14 +105,13 @@ Footer:   深色     #2C3E50
 
 ### 数据库表
 
-`admins`、`videos`、`materials`、`artworks`、`contact_forms`。完整 schema 见 `apps/api/migrations/0001_init.sql`。种子数据带有默认管理员账号（`admin` / `mili2026`）。
+`admins`、`videos`、`materials`、`artworks`、`voices`、`moments`、`contact_forms`。完整 schema 见 `apps/api/migrations/`。种子数据带有默认管理员账号（`admin` / `mili2026`）。
 
 ## 待办事项
 
 详见 `to-do-list.md`。主要剩余事项：
 - R2 图片/音频上传（阻塞于外币卡）
 - 企微通知（阻塞于机器人密钥）
-- 视频独立详情页 `/videos/:id`
 - 搜索、评论/点赞、数据导出等功能增强
 
 ## 关键注意事项

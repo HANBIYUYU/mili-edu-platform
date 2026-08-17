@@ -28,6 +28,7 @@ export const authAPI = {
 
 export const videoAPI = {
   list: () => api.get('/videos'),
+  get: (id: number | string) => api.get(`/videos/${id}`),
   create: (data: any) => api.post('/videos', data),
   update: (id: number, data: any) => api.put(`/videos/${id}`, data),
   delete: (id: number) => api.delete(`/videos/${id}`),
@@ -45,6 +46,22 @@ export const artworkAPI = {
   create: (data: any) => api.post('/artworks', data),
   delete: (id: number) => api.delete(`/artworks/${id}`),
   updateOrder: (id: number, sort_order: number) => api.put(`/artworks/${id}/order`, { sort_order }),
+}
+
+export const voiceAPI = {
+  list: (params?: { media_type?: string; category?: string }) => api.get('/voices', { params }),
+  get: (id: number | string) => api.get(`/voices/${id}`),
+  create: (data: any) => api.post('/voices', data),
+  update: (id: number, data: any) => api.put(`/voices/${id}`, data),
+  delete: (id: number) => api.delete(`/voices/${id}`),
+}
+
+export const momentAPI = {
+  list: (params?: { year?: number }) => api.get('/moments', { params }),
+  get: (id: number | string) => api.get(`/moments/${id}`),
+  create: (data: any) => api.post('/moments', data),
+  update: (id: number, data: any) => api.put(`/moments/${id}`, data),
+  delete: (id: number) => api.delete(`/moments/${id}`),
 }
 
 export const contactAPI = {

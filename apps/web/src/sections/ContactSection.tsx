@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Input, Button, Form, message } from 'antd';
-import { MailOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
+import { MailOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import RevealWrapper from '../components/RevealWrapper';
 import { contactAPI } from '../api';
 
 const contactInfo = [
-  { icon: <MailOutlined />, label: '邮箱', value: 'contact@milizhijiao.org' },
-  { icon: <PhoneOutlined />, label: '电话', value: '400-888-0000' },
-  { icon: <EnvironmentOutlined />, label: '地址', value: '北京市海淀区中关村大街1号' },
+  { icon: <MailOutlined />, label: '邮箱', value: 'SHU_MILIvolunteer@163.com' },
+  { icon: <EnvironmentOutlined />, label: '地址', value: '上海市宝山区大场镇上大路99号上海大学' },
 ];
 
 export default function ContactSection() {
@@ -54,15 +53,15 @@ export default function ContactSection() {
           <RevealWrapper delay={2}>
             <div>
               <h3 style={{ fontSize: 20, fontWeight: 600, color: '#fff', marginBottom: 24 }}>联系方式</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
                 {contactInfo.map((item) => (
-                  <div key={item.label} className="contact-info-card" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.2)', transition: 'all 0.3s ease', cursor: 'default' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.25)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
+                  <div key={item.label} className="contact-info-card" style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '28px 24px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.2)', transition: 'all 0.3s ease', cursor: 'default' }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.25)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
                       {item.icon}
                     </div>
                     <div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginBottom: 2 }}>{item.label}</div>
-                      <div style={{ fontSize: 15, color: '#fff', fontWeight: 500 }}>{item.value}</div>
+                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 4 }}>{item.label}</div>
+                      <div style={{ fontSize: 17, color: '#fff', fontWeight: 500 }}>{item.value}</div>
                     </div>
                   </div>
                 ))}

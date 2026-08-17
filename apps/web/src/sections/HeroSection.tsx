@@ -274,7 +274,7 @@ export default function HeroSection() {
       </div>
 
       {/* 底部过渡 */}
-      <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent 0%, transparent 35%, rgba(250, 249, 246, 0.3) 70%, #FAF9F6 100%)' }} />
+      <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent 0%, transparent 35%, rgba(248, 235, 212, 0.3) 70%, #F8EBD4 100%)' }} />
     </section>
   );
 }

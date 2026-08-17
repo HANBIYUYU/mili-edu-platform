@@ -9,7 +9,7 @@ const ALLOWED_DOMAINS = [
   'www.youtube.com',
 ]
 
-function validateIframeSrc(src: string): boolean {
+export function validateIframeSrc(src: string): boolean {
   try {
     const url = new URL(src.startsWith('//') ? 'https:' + src : src)
     return ALLOWED_DOMAINS.some(d => url.hostname === d || url.hostname.endsWith('.' + d))
@@ -25,6 +25,20 @@ videos.get('/', async (c) => {
   ).all()
   
   return c.json({ data: results })
+})
+
+videos.get('/:id', async (c) => {
+  const id = c.req.param('id')
+  const db = c.env.DB
+  const result = await db.prepare(
+    'SELECT id, title, iframe_src, category, sort_order, created_at FROM videos WHERE id = ?'
+  ).bind(id).first()
+
+  if (!result) {
+    return c.json({ error: '视频不存在' }, 404)
+  }
+
+  return c.json({ data: result })
 })
 
 videos.post('/', authMiddleware, async (c) => {

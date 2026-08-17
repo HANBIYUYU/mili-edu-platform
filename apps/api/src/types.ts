@@ -38,6 +38,28 @@ export interface Artwork {
   created_at: string
 }
 
+export interface Voice {
+  id: number
+  title: string
+  author: string
+  media_type: 'image' | 'video'
+  file_key: string | null
+  iframe_src: string | null
+  category: string
+  sort_order: number
+  created_at: string
+}
+
+export interface Moment {
+  id: number
+  year: number
+  title: string
+  file_key: string
+  thumbnail_key: string | null
+  sort_order: number
+  created_at: string
+}
+
 export interface ContactForm {
   id: number
   name: string

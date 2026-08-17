@@ -49,9 +49,11 @@ export default function Footer() {
             }}
           >
             {[
+              { label: '支教拾光', href: '#moments' },
               { label: '关于我们', href: '#about' },
               { label: '示范课程', href: '#videos' },
               { label: '推普资料', href: '#materials' },
+              { label: '童声童语', href: '#voices' },
               { label: '儿童画展', href: '#gallery' },
               { label: '联系我们', href: '#contact' },
             ].map(

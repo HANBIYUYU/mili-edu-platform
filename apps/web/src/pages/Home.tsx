@@ -3,9 +3,11 @@ import { useLocation } from 'react-router-dom';
 import TransparentNav from '../components/TransparentNav';
 import BackToTop from '../components/BackToTop';
 import HeroSection from '../sections/HeroSection';
+import MomentsSection from '../sections/MomentsSection';
 import AboutSection from '../sections/AboutSection';
 import VideosSection from '../sections/VideosSection';
 import MaterialsSection from '../sections/MaterialsSection';
+import VoicesSection from '../sections/VoicesSection';
 import GallerySection from '../sections/GallerySection';
 import ContactSection from '../sections/ContactSection';
 import FloatingNext from '../components/FloatingNext';
@@ -38,9 +40,11 @@ export default function Home() {
     <div style={{ background: '#FAF9F6' }}>
       <TransparentNav />
       <HeroSection />
+      <MomentsSection />
       <AboutSection />
       <VideosSection />
       <MaterialsSection />
+      <VoicesSection />
       <GallerySection />
       <ContactSection />
       <FloatingNext />
