@@ -1,11 +1,19 @@
-# R2 视频直传改造计划（绕过 Worker 100MB 限制）
+# R2 大文件上传方案（绕过 Worker 100MB 限制）
 
-> **状态：代码已完成并部署（2026-09）。待办：注入 3 个 secrets + 调用一次 CORS 配置后即可实测大文件直传。**
+> **状态：已完成并上线（2026-09）。实现采用「Worker R2 binding 分片上传 /api/upload-chunk」：
+> 无需 S3 Token/CORS/预签名，生产实测 130MB（3×64MB 片）通过。**
+> S3 预签名直传（下文 B 方案）验证中发现 R2 桶 CORS 配置接口不稳定（MalformedXML）且
+> multipart 发起偶发 AccessDenied，故作为备选保留（见 `apps/api/src/lib/s3.ts` 与 upload-large 路由）。
 
-> 背景：当前上传 = 浏览器 → Worker(/api/upload) → R2。视频需整段经过 Worker，受免费版
-> Workers **单请求 ~100MB 上限**约束，且多一跳。用户上传 ~800MB 视频会超限/失败。
-> 方案：**大文件走 R2 S3 预签名 Multipart 直传**，浏览器把分片直接 PUT 到 R2 的 S3 端点，
-> 不经过 Worker 中转，单对象上限 5GiB，速度接近本地上行带宽。
+## 最终方案 A（已启用）：R2 binding 分片上传
+
+浏览器把文件切成 64MB 分片、3 路并发 POST 到 `/api/upload-chunk`，Worker 用 R2 binding
+（createMultipartUpload/uploadPart/complete）落桶：
+- 每片 <100MB，规避 Workers 请求体上限；整体无大小限制（R2 单对象 ≤5GiB）
+- 无需 R2 API Token、无需桶 CORS；保留断点重试（失败 abort 清理）
+- 前端 `uploadChunked`（`apps/web/src/utils/uploadLarge.ts`）：init → part（带进度/片号）→ complete
+
+其余小节为备选 B（S3 预签名直传）记录，供未来提速参考。
 
 ## 上传分派策略
 

@@ -20,12 +20,14 @@ export interface S3Creds {
 }
 
 export function credsFromEnv(env: Record<string, string | undefined>): S3Creds | null {
-  const { R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY } = env
-  if (!R2_ENDPOINT || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) return null
+  const rawEndpoint = env.R2_ENDPOINT
+  const rawAccess = env.R2_ACCESS_KEY_ID
+  const rawSecret = env.R2_SECRET_ACCESS_KEY
+  if (!rawEndpoint || !rawAccess || !rawSecret) return null
   return {
-    endpoint: R2_ENDPOINT.replace(/\/+$/, ''),
-    accessKeyId: R2_ACCESS_KEY_ID,
-    secretAccessKey: R2_SECRET_ACCESS_KEY,
+    endpoint: rawEndpoint.trim().replace(/\/+$/, ''),
+    accessKeyId: rawAccess.trim(),
+    secretAccessKey: rawSecret.trim(),
   }
 }
 
@@ -105,24 +107,27 @@ export async function signRequest(
   const host = new URL(creds.endpoint).host
   const uri = '/' + BUCKET + canonicalUri(key)
 
-  const allHeaders: Record<string, string> = {
-    host,
-    'x-amz-date': amzDate,
-    ...headers,
-  }
-  const signedHeaders = Object.keys(allHeaders)
-    .map((h) => h.toLowerCase())
-    .sort()
-    .join(';')
-
-  const canonicalHeaders = Object.keys(allHeaders)
-    .sort()
-    .map((h) => `${h.toLowerCase()}:${allHeaders[h]}`)
-    .join('\n')
-
   const payloadHash = opts.body === undefined || opts.body === null
     ? EMPTY_HASH
     : await sha256Hex(typeof opts.body === 'string' ? opts.body : new Uint8Array(opts.body))
+
+  const allHeaders: Record<string, string> = {
+    host,
+    'x-amz-date': amzDate,
+    'x-amz-content-sha256': payloadHash,
+    ...headers,
+  }
+  // 统一小写规范化，避免 canonical 与实际发送头不一致（键大小写）
+  const normHeaders: Record<string, string> = {}
+  Object.keys(allHeaders).forEach((h) => {
+    normHeaders[h.toLowerCase()] = String(allHeaders[h])
+  })
+  const signedHeaders = Object.keys(normHeaders).sort().join(';')
+
+  const canonicalHeaders = Object.keys(normHeaders)
+    .sort()
+    .map((h) => `${h}:${normHeaders[h]}`)
+    .join('\n')
 
   const canonicalRequest = [
     method,
@@ -156,6 +161,7 @@ export async function signRequest(
   const sendHeaders: Record<string, string> = {
     Authorization: authHeader,
     'X-Amz-Date': amzDate,
+    'X-Amz-Content-Sha256': payloadHash,
     ...headers,
   }
   return { url: url.toString(), headers: sendHeaders }
@@ -306,13 +312,11 @@ export async function abortMultipart(
 }
 
 const CORS_XML =
-  '<CORSConfiguration>' +
+  '<CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">' +
   '<CORSRule>' +
   '<AllowedOrigin>*</AllowedOrigin>' +
-  '<AllowedMethod>PUT</AllowedMethod><AllowedMethod>GET</AllowedMethod><AllowedMethod>HEAD</AllowedMethod>' +
-  '<AllowedHeader>*</AllowedHeader>' +
-  '<ExposeHeader>ETag</ExposeHeader>' +
-  '<MaxAgeSeconds>3600</MaxAgeSeconds>' +
+  '<AllowedMethod>PUT</AllowedMethod>' +
+  '<AllowedMethod>GET</AllowedMethod>' +
   '</CORSRule>' +
   '</CORSConfiguration>'
 

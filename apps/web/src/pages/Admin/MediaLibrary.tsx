@@ -6,6 +6,7 @@ import { CloudUploadOutlined, ReloadOutlined, SearchOutlined, PictureOutlined } 
 import { mediaAPI } from '../../api'
 import { fileUrl, fmtSize, dirOfKey, isImageKey, isAudioKey, isVideoKey, isDocKey } from '../../utils/fileUrl'
 import { COMPRESS_ADVICE_THRESHOLD, uploadAny } from '../../utils/uploadLarge'
+import { MediaPreviewModal } from '../../components/admin/MediaLibrary'
 
 const UPLOAD_DIRS = ['videos', 'docs', 'artworks', 'audios', 'voices', 'moments', 'images', 'misc']
 const DIR_HINTS: Record<string, string> = {
@@ -35,6 +36,7 @@ export default function MediaLibraryPage() {
   const [busy, setBusy] = useState(false)
   const [percent, setPercent] = useState(0)
   const [meta, setMeta] = useState<{ part: number; parts: number } | null>(null)
+  const [previewAsset, setPreviewAsset] = useState<Asset | null>(null)
 
   const reload = useCallback(() => {
     setLoading(true)
@@ -156,10 +158,14 @@ export default function MediaLibraryPage() {
                     border: '1px solid #eee', borderRadius: 10, overflow: 'hidden', background: '#fff',
                     display: 'flex', flexDirection: 'column',
                   }}>
-                    <div style={{
-                      height: 112, background: '#f6f4ee', display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', overflow: 'hidden',
-                    }}>
+                    <div
+                      style={{
+                        height: 112, background: '#f6f4ee', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', overflow: 'hidden', cursor: 'pointer',
+                      }}
+                      onClick={() => setPreviewAsset(a)}
+                      title="点击预览"
+                    >
                       {isImageKey(a.key) ? (
                         <img src={url} alt={a.key} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : isVideoKey(a.key) ? (
@@ -246,6 +252,8 @@ export default function MediaLibraryPage() {
           </div>
         )}
       </Modal>
+
+      <MediaPreviewModal asset={previewAsset} open={!!previewAsset} onCancel={() => setPreviewAsset(null)} />
     </div>
   )
 }

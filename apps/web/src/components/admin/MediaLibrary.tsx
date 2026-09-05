@@ -4,7 +4,7 @@ import {
 } from 'antd'
 import {
   CloudUploadOutlined, CopyOutlined, DeleteOutlined, PictureOutlined,
-  SearchOutlined, AudioOutlined, FileTextOutlined, VideoCameraOutlined,
+  SearchOutlined, AudioOutlined, FileTextOutlined, ExportOutlined, CheckOutlined,
 } from '@ant-design/icons'
 import { mediaAPI } from '../../api'
 import { dirOfKey, fileUrl, fmtSize, isAudioKey, isDocKey, isImageKey, isVideoKey } from '../../utils/fileUrl'
@@ -64,6 +64,77 @@ function useAssets() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return { assets, loading, reload }
+}
+
+/** 素材预览弹窗：图片/PDF/视频/音频都能点开看 */
+export function MediaPreviewModal({ asset, open, onCancel, onUse }: {
+  asset: Asset | null
+  open: boolean
+  onCancel: () => void
+  onUse?: (key: string) => void
+}) {
+  const k = asset?.key || ''
+  const url = fileUrl(k)
+  const kind = k ? kindOfAsset(k) : 'other'
+
+  let width = 720
+  if (kind === 'pdf' || kind === 'doc') width = 960
+  if (kind === 'video') width = 860
+
+  return (
+    <Modal
+      open={open && !!asset}
+      onCancel={onCancel}
+      footer={null}
+      centered
+      width={width}
+      destroyOnClose
+      title={
+        asset ? (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 14, wordBreak: 'break-all' }}>{asset.key}</span>
+            <Space size={4}>
+              {onUse && (
+                <Button size="small" type="primary" icon={<CheckOutlined />} onClick={() => { onUse(k); onCancel() }}>
+                  使用此素材
+                </Button>
+              )}
+              {url && (
+                <Button size="small" icon={<ExportOutlined />} onClick={() => window.open(url, '_blank')}>
+                  新窗口打开
+                </Button>
+              )}
+            </Space>
+          </div>
+        ) : undefined
+      }
+    >
+      {asset && (
+        <div>
+          {kind === 'image' ? (
+            <img src={url} alt={k} style={{ width: '100%', maxHeight: '74vh', objectFit: 'contain', background: '#f6f4ee', borderRadius: 10, display: 'block' }} />
+          ) : (kind === 'pdf' || kind === 'doc') ? (
+            <iframe src={url} title={k} style={{ width: '100%', height: '70vh', border: 'none', borderRadius: 10, background: '#525659' }} />
+          ) : kind === 'video' ? (
+            <video key={k} src={url} controls autoPlay playsInline style={{ width: '100%', maxHeight: '74vh', borderRadius: 10, background: '#000' }} />
+          ) : kind === 'audio' ? (
+            <div style={{ padding: '30px 12px', textAlign: 'center', background: '#fafafa', borderRadius: 10 }}>
+              <AudioOutlined style={{ fontSize: 56, color: '#6BAF92' }} />
+              <div style={{ margin: '14px 0' }}>{k.split('/').pop()}</div>
+              <audio src={url} controls style={{ width: '100%' }} />
+            </div>
+          ) : (
+            <div style={{ padding: 40, textAlign: 'center' }}>
+              <a href={url} target="_blank" rel="noreferrer">打开文件 →</a>
+            </div>
+          )}
+          <div style={{ color: '#999', fontSize: 12, textAlign: 'center', marginTop: 8 }}>
+            {asset.key} · {fmtSize(asset.size)}
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
 }
 
 /** 上传子窗口：选择目录 + 选择文件（图片/音频/视频/文档可预览） */
@@ -183,33 +254,36 @@ function UploadMediaModal({ open, onCancel, onDone, initialDir }: {
   )
 }
 
-function AssetCard({ asset, onCopy, onDelete, onSelect }: {
+function AssetCard({ asset, onPreview, onUse, onCopy, onDelete }: {
   asset: Asset
+  onPreview?: (asset: Asset) => void
+  onUse?: (key: string) => void
   onCopy?: (k: string) => void
   onDelete?: (k: string) => void
-  onSelect?: (k: string) => void
 }) {
   const k = asset.key
   const url = fileUrl(k)
   const kind = kindOfAsset(k)
+  const clickable = onPreview || onUse
   return (
     <div style={{
       border: '1px solid #eee', borderRadius: 10, overflow: 'hidden', background: '#fff',
-      cursor: onSelect ? 'pointer' : 'default', display: 'flex', flexDirection: 'column',
+      display: 'flex', flexDirection: 'column',
       transition: 'all .2s', boxShadow: '0 1px 4px rgba(0,0,0,.04)',
     }}>
       <div
-        style={{ height: 112, background: '#f6f4ee', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
-        onClick={() => onSelect?.(k)}
+        style={{ height: 112, background: '#f6f4ee', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: clickable ? 'pointer' : 'default' }}
+        onClick={() => { if (onPreview) onPreview(asset); else if (onUse) onUse(k) }}
+        title={clickable ? '点击预览' : k}
       >
         {kind === 'image' ? (
           <img src={url} alt={k} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : kind === 'video' ? (
           <video src={url} muted preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover', background: '#000' }} />
+        ) : kind === 'pdf' || kind === 'doc' ? (
+          <div style={{ textAlign: 'center', color: '#999' }}><FileTextOutlined style={{ fontSize: 36 }} /><div style={{ fontSize: 12 }}>{kind === 'pdf' ? 'PDF' : '文档'}</div></div>
         ) : kind === 'audio' ? (
           <div style={{ textAlign: 'center', color: '#999' }}><AudioOutlined style={{ fontSize: 36 }} /><div style={{ fontSize: 12 }}>音频</div></div>
-        ) : kind === 'doc' ? (
-          <div style={{ textAlign: 'center', color: '#999' }}><FileTextOutlined style={{ fontSize: 36 }} /><div style={{ fontSize: 12 }}>文档</div></div>
         ) : (
           <Tag>文件</Tag>
         )}
@@ -219,6 +293,7 @@ function AssetCard({ asset, onCopy, onDelete, onSelect }: {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{fmtSize(asset.size)}</span>
           <span onClick={(e) => e.stopPropagation()}>
+            {onUse && <Button size="small" type="text" icon={<CheckOutlined />} onClick={() => onUse(k)}>选用</Button>}
             {onCopy && <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => onCopy(k)} />}
             {onDelete && (
               <Popconfirm title="删除该素材？" description="被内容引用的图片/文件将无法显示" onConfirm={() => onDelete(k)}>
@@ -233,14 +308,15 @@ function AssetCard({ asset, onCopy, onDelete, onSelect }: {
 }
 
 /** 通用素材网格：目录过滤 + 关键词搜索；固定高度内滚动 */
-function AssetGrid({ assets, kw, dir, height, onCopy, onDelete, onSelect, kinds }: {
+function AssetGrid({ assets, kw, dir, height, onPreview, onUse, onCopy, onDelete, kinds }: {
   assets: Asset[]
   kw: string
   dir: string
   height?: string
+  onPreview?: (asset: Asset) => void
+  onUse?: (k: string) => void
   onCopy?: (k: string) => void
   onDelete?: (k: string) => void
-  onSelect?: (k: string) => void
   kinds?: MediaKind[]
 }) {
   const list = useMemo(() => assets.filter((a) => {
@@ -254,7 +330,7 @@ function AssetGrid({ assets, kw, dir, height, onCopy, onDelete, onSelect, kinds 
   return (
     <div style={{ maxHeight: height || 'calc(100vh - 340px)', overflowY: 'auto', paddingRight: 6 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(170px, 100%), 1fr))', gap: 12 }}>
-        {list.map((a) => <AssetCard key={a.key} asset={a} onCopy={onCopy} onDelete={onDelete} onSelect={onSelect} />)}
+        {list.map((a) => <AssetCard key={a.key} asset={a} onPreview={onPreview} onUse={onUse} onCopy={onCopy} onDelete={onDelete} />)}
       </div>
     </div>
   )
@@ -266,7 +342,7 @@ function dirOptions(assets: Asset[]) {
   return [...dirs].map((d) => ({ value: d, label: `${d}${DIR_HINTS[d] ? `（${DIR_HINTS[d]}）` : ''}` }))
 }
 
-/** 素材选择弹窗：内容表单「素材库」按钮使用；kinds 限定可选类型；onSelect 返回 R2 key */
+/** 素材选择弹窗：内容表单「素材库」按钮使用；点卡片先预览，弹窗内点「使用此素材」选中 */
 export function MediaPickerModal({ open, onCancel, onSelect, kinds, title, initialDir }: {
   open: boolean
   onCancel: () => void
@@ -280,12 +356,13 @@ export function MediaPickerModal({ open, onCancel, onSelect, kinds, title, initi
   const [kw, setKw] = useState('')
   const [dir, setDir] = useState('全部')
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [preview, setPreview] = useState<Asset | null>(null)
 
   const defaultUploadDir = initialDir || (kinds && kinds.length === 1 ? dirForKind[kinds[0]] : undefined)
 
   return (
     <Modal
-      title={title || '从素材库选择'}
+      title={title || '从素材库选择（点击卡片预览）'}
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -300,10 +377,13 @@ export function MediaPickerModal({ open, onCancel, onSelect, kinds, title, initi
       <Spin spinning={loading}>
         <AssetGrid
           assets={assets} kw={kw} dir={dir} kinds={kinds} height="55vh"
-          onSelect={(k) => { onSelect(k); onCancel() }}
+          onPreview={setPreview}
+          onUse={(k) => { onSelect(k); onCancel() }}
         />
       </Spin>
       <UploadMediaModal open={uploadOpen} onCancel={() => setUploadOpen(false)} onDone={reload} initialDir={defaultUploadDir} />
+      <MediaPreviewModal asset={preview} open={!!preview} onCancel={() => setPreview(null)}
+        onUse={(k) => { onSelect(k); setPreview(null); onCancel() }} />
     </Modal>
   )
 }

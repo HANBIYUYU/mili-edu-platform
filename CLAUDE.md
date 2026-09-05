@@ -48,7 +48,7 @@ pnpm clean            # 删除所有 node_modules
   - **素材生命周期**：R2 素材是素材库公共资产，删除内容记录（videos/materials/artworks/voices/moments）**不会**自动删 R2 对象；清理请在素材库手动删除
   - **file_key 归一化**：DB 中 `file_key` 可能带 `/api/files/` 前缀（旧数据/粘贴 URL），读取与删除前用后端 `toR2Key`（`src/lib/files.ts`）、前端输入用 `normalizeFileKey`（`utils/fileUrl.ts`）归一化；展示 URL 统一用 `fileUrl(key)` 生成
   - **视频方案**：示范视频与童声童语视频均为 R2 直传（mp4/webm/mov，目录 `videos/`），前台用 HTML5 `<video>` 播放（videos 表有兼容列 `iframe_src` 恒为空、弃用 B站）
-  - **大文件直传**（`/api/upload-large`）：>90MB 走 R2 S3 预签名 Multipart（64MB/片、3 并发、浏览器直 PUT 到 `R2_ENDPOINT`，绕过 Worker 100MB 限制，上限 5GiB）。需 Worker secrets：`R2_ENDPOINT` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY`；桶 CORS 一次性配置见 `/api/upload-large/setup-cors`。签名实现 `src/lib/s3.ts`，前端 `src/utils/uploadLarge.ts`
+  - **大文件上传（>90MB）**：`/api/upload-chunk`（init/part/complete/abort）——浏览器按 64MB 分片、3 路并发 POST 给 Worker，Worker 用 R2 binding `createMultipartUpload/uploadPart/complete` 落桶；每片 <100MB 规避 Workers 请求体上限，可传任意大小，无需 S3 Token/CORS。前端 `src/utils/uploadLarge.ts` 的 `uploadChunked`；`/api/upload-large`（S3 预签名直传）为备选实现（需 secrets + 桶 CORS，默认未启用）
 
 ### Web（`apps/web`）— React + Vite + Ant Design + React Router
 

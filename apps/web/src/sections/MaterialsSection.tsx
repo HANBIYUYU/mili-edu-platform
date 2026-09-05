@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Skeleton, Empty } from 'antd';
-import { DownloadOutlined, FilePdfOutlined, FileWordOutlined, FilePptOutlined } from '@ant-design/icons';
+import { Modal, Skeleton, Empty } from 'antd';
+import { DownloadOutlined, FilePdfOutlined, FileWordOutlined, FilePptOutlined, ReadOutlined } from '@ant-design/icons';
 import RevealWrapper from '../components/RevealWrapper';
 import { materialAPI } from '../api';
-import { fmtSize } from '../utils/fileUrl';
+import { fileUrl, fmtSize } from '../utils/fileUrl';
 
 const typeMeta: Record<string, { color: string; bgColor: string; icon: React.ReactNode }> = {
   pdf:  { color: '#E57373', bgColor: '#FFEBEE', icon: <FilePdfOutlined /> },
@@ -31,6 +31,7 @@ export default function MaterialsSection() {
     // 直接打开下载地址（R2 流式返回，附件下载）
     window.open(materialAPI.downloadUrl(id), '_blank', 'noopener');
   };
+  const [reading, setReading] = useState<{ title: string; url: string; id: number } | null>(null);
 
   return (
     <section
@@ -110,7 +111,19 @@ export default function MaterialsSection() {
                         {m.file_size ? ` · ${fmtSize(m.file_size)}` : ''}
                       </div>
                     </div>
+                    {m.file_type === 'pdf' && (
+                      <button
+                        title="在线阅读 PDF"
+                        style={{ width: 36, height: 36, borderRadius: 10, border: 'none', background: '#7CB342', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, marginRight: 8, transition: 'all 0.3s ease' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
+                        onClick={(e) => { e.stopPropagation(); setReading({ title: m.title, url: fileUrl(m.file_key), id: m.id }); }}
+                      >
+                        <ReadOutlined />
+                      </button>
+                    )}
                     <button
+                      title="下载文件"
                       style={{ width: 36, height: 36, borderRadius: 10, border: 'none', background: '#6BAF92', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all 0.3s ease' }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)'; }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
@@ -125,6 +138,35 @@ export default function MaterialsSection() {
           </div>
         )}
       </div>
+
+      {/* PDF 在线阅读 */}
+      <Modal
+        open={!!reading}
+        onCancel={() => setReading(null)}
+        footer={null}
+        width={920}
+        centered
+        destroyOnClose
+        title={
+          reading ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 15 }}>{reading.title}</span>
+              <a href={materialAPI.downloadUrl(reading.id)} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: '#6BAF92' }}>
+                下载 PDF →
+              </a>
+            </div>
+          ) : undefined
+        }
+      >
+        {reading && (
+          <iframe
+            key={reading.url}
+            src={reading.url}
+            title={reading.title}
+            style={{ width: '100%', height: '72vh', border: 'none', borderRadius: 10, background: '#525659' }}
+          />
+        )}
+      </Modal>
 
       <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent, #AED581)' }} />
     </section>

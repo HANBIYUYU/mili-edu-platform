@@ -126,7 +126,113 @@ export async function uploadLarge(
 }
 
 /**
- * 上传分流：≤90MB 走 Worker 单 PUT（uploadFile），更大走 S3 预签名分片直传。
+ * 大文件分片上传（经 Worker R2 binding，无需 S3 Token/CORS）：
+ * init → 每片 multipart POST（≤64MB）→ complete
+ */
+export async function uploadChunked(
+  file: File,
+  dir: string,
+  onProgress?: (percent: number, meta?: UploadMeta) => void,
+): Promise<{ key: string }> {
+  let initBody: any
+  try {
+    const res: any = await api.post('/upload-chunk/init', { dir, name: file.name, size: file.size })
+    initBody = res?.data
+  } catch (e: any) {
+    throw e?.error ? e : { error: '发起分片上传失败，请稍后重试' }
+  }
+  const init: { key: string; uploadId: string; chunkSize: number; count: number } = initBody
+  const { key, uploadId } = init
+  const CHUNK = 64 * 1024 * 1024
+  const parts = new Array(init.count).fill(0).map((_, i) => i + 1)
+
+  let bytesDone = 0
+  let partsDone = 0
+  let next = 0
+  let failed: string | null = null
+  const etags: { partNumber: number; etag: string }[] = []
+
+  const report = () => {
+    const total = file.size || 1
+    onProgress?.(Math.min(100, Math.round((bytesDone / total) * 100)), {
+      part: partsDone,
+      parts: init.count,
+      bytesLoaded: bytesDone,
+      bytesTotal: file.size,
+    })
+  }
+
+  const uploadPart = (partNumber: number) =>
+    new Promise<void>((resolve, reject) => {
+      const start = (partNumber - 1) * CHUNK
+      const blob = file.slice(start, start + CHUNK)
+      const fd = new FormData()
+      fd.append('file', blob, 'chunk')
+      fd.append('key', key)
+      fd.append('uploadId', uploadId)
+      fd.append('partNumber', String(partNumber))
+
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', '/api/upload-chunk/part')
+      xhr.withCredentials = true
+      xhr.responseType = 'text'
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const body = JSON.parse(xhr.responseText)
+            if (body?.data?.etag) {
+              etags.push({ partNumber, etag: String(body.data.etag).replace(/"/g, '') })
+            }
+          } catch { /* ignore */ }
+          bytesDone += blob.size
+          partsDone += 1
+          resolve()
+        } else {
+          reject(new Error(`分片 ${partNumber} 上传失败（HTTP ${xhr.status}）`))
+        }
+      }
+      xhr.onerror = () => reject(new Error(`分片 ${partNumber} 网络错误`))
+      xhr.send(fd)
+    })
+
+  const worker = async () => {
+    while (!failed && next < parts.length) {
+      const idx = next++
+      try {
+        await uploadPart(parts[idx])
+        report()
+      } catch (err: any) {
+        failed = err?.message || '上传失败'
+        report()
+        break
+      }
+    }
+  }
+
+  const runners: Promise<void>[] = []
+  for (let i = 0; i < Math.min(CONCURRENCY, parts.length); i++) {
+    runners.push(worker())
+  }
+  await Promise.all(runners)
+
+  if (failed) {
+    try { await api.post('/upload-chunk/abort', { key, uploadId }) } catch { /* ignore */ }
+    throw { error: failed }
+  }
+
+  if (etags.length !== parts.length) {
+    throw { error: '分片未全部完成，请重试' }
+  }
+  try {
+    await api.post('/upload-chunk/complete', { key, uploadId, parts: etags.sort((a, b) => a.partNumber - b.partNumber) })
+  } catch (e: any) {
+    throw e?.error ? e : { error: '合并分片失败，请重试' }
+  }
+  return { key }
+}
+
+/**
+ * 上传分流：≤90MB 走 Worker 单 PUT（uploadFile），更大走 R2 binding 分片上传。
  */
 export async function uploadAny(
   file: File,
@@ -134,7 +240,7 @@ export async function uploadAny(
   onProgress?: (percent: number, meta?: UploadMeta) => void,
 ): Promise<{ key: string; size: number }> {
   if (file.size > LARGE_UPLOAD_THRESHOLD) {
-    const r = await uploadLarge(file, dir, onProgress)
+    const r = await uploadChunked(file, dir, onProgress)
     return { key: r.key, size: file.size }
   }
   const r = await uploadFile(file, dir, onProgress ? (p) => onProgress(p) : undefined)

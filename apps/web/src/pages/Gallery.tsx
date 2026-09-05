@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Modal, Skeleton, Empty } from 'antd';
-import { PictureOutlined } from '@ant-design/icons';
+import { Modal, Skeleton, Empty, Tag } from 'antd';
+import { PictureOutlined, FilePdfOutlined } from '@ant-design/icons';
 import PageLayout from '../components/PageLayout';
 import RevealWrapper from '../components/RevealWrapper';
 import { artworkAPI } from '../api';
-import { fileUrl } from '../utils/fileUrl';
+import { fileUrl, isPdfKey } from '../utils/fileUrl';
 
 const palette = ['#E8F5E9', '#FCE4EC', '#FFF3E0', '#E3F2FD', '#FFFDE7', '#F3E5F5'];
 
@@ -14,6 +14,7 @@ interface ArtworkItem {
   child_name?: string;
   media_type?: string;
   file_key?: string;
+  thumbnail_key?: string;
 }
 
 export default function GalleryPage() {
@@ -58,7 +59,11 @@ export default function GalleryPage() {
         <Empty description="暂无作品" />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 24 }}>
-          {artworks.map((a, index) => (
+          {artworks.map((a, index) => {
+            const isPdf = isPdfKey(a.file_key || '');
+            const coverKey = a.thumbnail_key || (isPdf ? '' : a.file_key) || '';
+            const coverUrl = fileUrl(coverKey);
+            return (
             <RevealWrapper key={a.id} delay={index}>
               <div
                 style={{
@@ -84,14 +89,19 @@ export default function GalleryPage() {
                 }}
                 onClick={() => openLightbox(a)}
               >
-                {fileUrl(a.file_key) ? (
+                {coverUrl ? (
                   <img
-                    src={fileUrl(a.file_key)}
+                    src={coverUrl}
                     alt={a.title}
                     loading="lazy"
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
+                ) : isPdf ? (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #FFE0B2, #FFCC80)' }}>
+                    <FilePdfOutlined style={{ fontSize: 56, color: '#E53935' }} />
+                    <Tag color="red" style={{ marginTop: 12 }}>PDF 作品集</Tag>
+                  </div>
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 72, background: palette[index % palette.length], opacity: 0.9 }}>
                     <PictureOutlined style={{ fontSize: 52, color: 'rgba(0,0,0,0.12)' }} />
@@ -105,7 +115,8 @@ export default function GalleryPage() {
                 </div>
               </div>
             </RevealWrapper>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -114,10 +125,27 @@ export default function GalleryPage() {
         onCancel={() => setLightboxOpen(false)}
         footer={null}
         centered
-        width={600}
+        width={currentArt && isPdfKey(currentArt.file_key || '') ? 920 : 640}
         styles={{ body: { padding: 0, borderRadius: 20, overflow: 'hidden', background: 'transparent' } }}
       >
-        {currentArt && (
+        {currentArt && (isPdfKey(currentArt.file_key || '') ? (
+          <div style={{ background: '#fff', borderRadius: 20, overflow: 'hidden' }}>
+            <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0' }}>
+              <h3 style={{ color: '#2C3E33', margin: 0, fontSize: 16 }}>{currentArt.title}</h3>
+              <a href={fileUrl(currentArt.file_key)} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: '#6BAF92' }}>
+                在新窗口打开 / 下载 →
+              </a>
+            </div>
+            <iframe
+              src={fileUrl(currentArt.file_key)}
+              title={currentArt.title}
+              style={{ width: '100%', height: '72vh', border: 'none', display: 'block', background: '#525659' }}
+            />
+            {currentArt.child_name && (
+              <div style={{ padding: '10px 20px', color: '#6A7A6A', fontSize: 14 }}>小作者：{currentArt.child_name}</div>
+            )}
+          </div>
+        ) : (
           <div style={{ background: '#fff', borderRadius: 20, overflow: 'hidden' }}>
             {fileUrl(currentArt.file_key) ? (
               <img src={fileUrl(currentArt.file_key)} alt={currentArt.title} style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', background: '#F6F4EE', display: 'block' }} />
@@ -131,7 +159,7 @@ export default function GalleryPage() {
               {currentArt.child_name && <p style={{ color: '#6A7A6A', margin: '4px 0 0', fontSize: 14 }}>小作者：{currentArt.child_name}</p>}
             </div>
           </div>
-        )}
+        ))}
       </Modal>
 
       <style>{`

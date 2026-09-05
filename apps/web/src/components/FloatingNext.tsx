@@ -21,14 +21,14 @@ export default function FloatingNext() {
         }
       }
 
-      // Hero 区域不显示
-      const aboutEl = document.getElementById('about');
-      const inHero = aboutEl ? aboutEl.getBoundingClientRect().top > window.innerHeight * 0.8 : false;
+      // Hero 区域（含新加入的「支教拾光」之前）不显示：以第一个跟踪区块（moments）判断
+      const firstEl = document.getElementById('moments');
+      const inTop = firstEl ? firstEl.getBoundingClientRect().top > window.innerHeight * 0.9 : true;
 
       // 滚动到页面最底部时隐藏（Footer 区域）
       const scrollBottom = window.innerHeight + window.scrollY;
       const pageBottom = document.documentElement.scrollHeight;
-      setVisible(!inHero && pageBottom - scrollBottom > 120);
+      setVisible(!inTop && pageBottom - scrollBottom > 120);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -40,7 +40,8 @@ export default function FloatingNext() {
 
   const handleClick = useCallback(() => {
     if (isLast) {
-      document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+      // 最后一节（联系表单）→ 返回页面顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       const next = document.getElementById(sections[current + 1]);
       next?.scrollIntoView({ behavior: 'smooth' });

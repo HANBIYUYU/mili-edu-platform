@@ -246,7 +246,7 @@ export default function HeroSection() {
         <RevealWrapper delay={3}>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
-              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('moments')?.scrollIntoView({ behavior: 'smooth' })}
               className="btn-primary"
             >
               了解我们 ↓

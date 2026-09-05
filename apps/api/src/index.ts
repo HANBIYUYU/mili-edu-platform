@@ -10,6 +10,7 @@ import momentRoutes from './routes/moments'
 import contactRoutes from './routes/contact'
 import uploadRoutes from './routes/upload'
 import uploadLargeRoutes from './routes/upload-large'
+import uploadChunkRoutes from './routes/upload-chunk'
 import fileRoutes from './routes/files'
 import mediaRoutes from './routes/media'
 import statsRoutes from './routes/stats'
@@ -41,6 +42,7 @@ app.route('/api/moments', momentRoutes)
 app.route('/api/contact-forms', contactRoutes)
 app.route('/api/upload', uploadRoutes)
 app.route('/api/upload-large', uploadLargeRoutes)
+app.route('/api/upload-chunk', uploadChunkRoutes)
 app.route('/api/files', fileRoutes)
 app.route('/api/media', mediaRoutes)
 app.route('/api/stats', statsRoutes)

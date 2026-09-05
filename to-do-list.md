@@ -80,21 +80,18 @@
 - [ ] 页面加载进度条（NProgress 风格）
 - [ ] Section 间过渡带更精细的颜色微调
 
-## 进行中 / 待完成（需要你在 Cloudflare 提供密钥）
+## 大文件上传（已完成 ✅）
 
-- [ ] **大文件直传启用（代码已上线，等 R2 API Token）**
-  - [ ] 控制台 R2 → Manage R2 API Tokens → 创建（对象读/写，桶 mili-edu-assets），记录 Access Key ID / Secret / Account ID
-  - [ ] 注入 secrets（可自执行，或把三值发给维护者代为注入）：
-    - `pnpm --filter mili-edu-api exec wrangler secret put R2_ENDPOINT`（值：`https://<AccountID>.r2.cloudflarestorage.com`）
-    - `pnpm --filter mili-edu-api exec wrangler secret put R2_ACCESS_KEY_ID`
-    - `pnpm --filter mili-edu-api exec wrangler secret put R2_SECRET_ACCESS_KEY`
-  - [ ] 用管理员登录后调用一次 `POST /api/upload-large/setup-cors`（开启浏览器直传 CORS）
-  - [ ] 实测 ~800MB mp4 上传（后台素材库，自动分片 64MB×N 直传）
+- [x] **>90MB 分片上传**（`/api/upload-chunk`，R2 binding，无需 S3 Token/CORS）
+  - 后端 init/part/complete/abort：64MB/片 落桶；前端 3 路并发 + 聚合进度 + 片级显示（自动切换，≤90MB 仍走原单文件通道）
+  - 本地 + 生产实测：130MB（3 片）上传→合并→公网 Range 206 全部通过；素材删除清理正常
+  - 说明：S3 预签名直传 `/api/upload-large` 为备选（需 CORS），默认不启用；R2 secrets 已注入但非必需
+- [ ] 用真实 ~800MB 视频在后台上传体验（当前机制已支持任意大小）
 
 ## 功能增强
 
 - [x] 站内压缩指引 — 上传大视频提示中可打开 `/compress-guide`（源码 `video-compress-guide.md` / `apps/web/public/compress-guide.html`）
-- [ ] 大文件直传实测（等 secrets）：`scripts/verify-direct-upload.ps1` 端到端验证
+- [x] 大文件分片上传端到端验证 — `scripts/verify-direct-upload.ps1`（130MB 实测通过）
 
 - [ ] 内容填充 — 后台上传真实素材（支教照片按年份 / 儿童画作 / 朗诵音频 / 推普 PDF）并替换种子数据
 - [ ] 搜索功能 — 视频/资料关键词搜索

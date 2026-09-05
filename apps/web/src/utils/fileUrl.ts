@@ -18,6 +18,7 @@ export const normalizeFileKey = (value: string): string => {
 }
 
 export const isImageKey = (k: string): boolean => /\.(jpe?g|png|webp|gif)$/i.test(k)
+export const isPdfKey = (k: string): boolean => /\.pdf$/i.test(k)
 export const isAudioKey = (k: string): boolean => /\.(mp3|wav|m4a|aac)$/i.test(k)
 export const isVideoKey = (k: string): boolean => /\.(mp4|webm|mov)$/i.test(k)
 export const isDocKey = (k: string): boolean => /\.(pdf|docx)$/i.test(k)
