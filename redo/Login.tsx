@@ -19,7 +19,7 @@ export default function AdminLogin() {
       message.success('登录成功')
       navigate('/admin/dashboard')
     } catch (err: any) {
-      // 密码错误/账号不存在 → 表单内醒目提示
+      // 验证失败（密码错误 / 账号不存在 / 其他原因）→ 表单内醒目提示
       setError(err?.error || '登录失败，请检查用户名和密码后重试')
     } finally {
       setLoading(false)
@@ -32,19 +32,12 @@ export default function AdminLogin() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #2C3E33 0%, #6BAF92 55%, #F5A623 130%)',
-      padding: 16,
+      background: 'linear-gradient(135deg, #A3232B 0%, #C0392B 45%, #D4A017 100%)',
     }}>
       <Card style={{ width: 400, boxShadow: '0 12px 40px rgba(0,0,0,0.25)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{
-            width: 64, height: 64, margin: '0 auto 12px', borderRadius: 20,
-            background: 'linear-gradient(135deg, #6BAF92, #7CB342)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 30, color: '#fff',
-          }}>🌾</div>
-          <Title level={3} style={{ marginBottom: 4 }}>米粒支教社 · 管理后台</Title>
-          <p style={{ color: '#999', margin: 0 }}>知行杯 · 推普融合实践</p>
+          <Title level={3}>湘村新台 · 管理后台</Title>
+          <p style={{ color: '#999' }}>桂阳古戏台红色文旅数字官网</p>
         </div>
 
         <Form onFinish={handleLogin}>

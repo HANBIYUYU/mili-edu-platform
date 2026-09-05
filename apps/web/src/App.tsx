@@ -15,6 +15,7 @@ import AdminGallery from './pages/Admin/Gallery'
 import AdminVoices from './pages/Admin/Voices'
 import AdminMoments from './pages/Admin/Moments'
 import AdminContacts from './pages/Admin/Contacts'
+import AdminMedia from './pages/Admin/MediaLibrary'
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="voices" element={<AdminVoices />} />
         <Route path="moments" element={<AdminMoments />} />
         <Route path="contacts" element={<AdminContacts />} />
+        <Route path="media" element={<AdminMedia />} />
       </Route>
     </Routes>
   )

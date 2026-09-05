@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Modal, Skeleton, Empty } from 'antd';
 import RevealWrapper from '../components/RevealWrapper';
 import { momentAPI } from '../api';
+import { fileUrl } from '../utils/fileUrl';
 
 const palette = ['#FFF3E0', '#FCE4EC', '#E8F5E9', '#E3F2FD', '#FFFDE7', '#F3E5F5'];
 
@@ -16,6 +17,7 @@ export default function MomentsSection() {
   const [moments, setMoments] = useState<MomentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeYear, setActiveYear] = useState<number | null>(null);
+  const [preview, setPreview] = useState<MomentItem | null>(null);
 
   useEffect(() => {
     momentAPI.list().then((res: any) => {
@@ -105,26 +107,69 @@ export default function MomentsSection() {
         onCancel={() => setActiveYear(null)}
         footer={null}
         centered
-        width={860}
+        width={900}
         title={activeYear ? `${activeYear} 年的支教记忆` : ''}
       >
         {yearMoments.length === 0 ? (
           <Empty description="该年份暂无照片" />
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 20 }}>
-            {yearMoments.map((m, index) => (
-              <div key={m.id} style={{ background: palette[index % palette.length], borderRadius: 16, overflow: 'hidden', transition: 'transform 0.3s ease' }}>
-                <div style={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56 }}>
-                  🖼️
-                </div>
-                {m.title && (
-                  <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.7)', fontSize: 13, color: '#2C3E33', textAlign: 'center' }}>
-                    {m.title}
+            {yearMoments.map((m) => {
+              const url = fileUrl(m.file_key);
+              return (
+                <div
+                  key={m.id}
+                  style={{
+                    background: '#fff', borderRadius: 14, overflow: 'hidden',
+                    cursor: url ? 'pointer' : 'default',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'transform .2s',
+                  }}
+                  onClick={() => url && setPreview(m)}
+                  onMouseEnter={(e) => { if (url) e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  <div style={{ aspectRatio: '1', background: palette[m.id % palette.length], position: 'relative' }}>
+                    {url ? (
+                      <img
+                        src={url}
+                        alt={m.title || `${m.year} 支教照片`}
+                        loading="lazy"
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44 }}>
+                        🖼️
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                  {m.title && (
+                    <div style={{ padding: '8px 12px', fontSize: 13, color: '#2C3E33', textAlign: 'center', background: 'rgba(255,255,255,0.85)' }}>
+                      {m.title}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        )}
+      </Modal>
+
+      {/* 单张照片放大预览 */}
+      <Modal
+        open={!!preview}
+        onCancel={() => setPreview(null)}
+        footer={null}
+        centered
+        width={860}
+        title={preview?.title}
+      >
+        {preview && fileUrl(preview.file_key) && (
+          <img
+            src={fileUrl(preview.file_key)}
+            alt={preview.title || `${preview.year} 支教照片`}
+            style={{ width: '100%', maxHeight: '74vh', objectFit: 'contain', borderRadius: 10, background: '#f6f4ee' }}
+          />
         )}
       </Modal>
 

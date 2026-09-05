@@ -4,6 +4,7 @@ import { Skeleton, Empty, Tag } from 'antd';
 import PageLayout from '../components/PageLayout';
 import RevealWrapper from '../components/RevealWrapper';
 import { videoAPI } from '../api';
+import { fileUrl } from '../utils/fileUrl';
 
 const categoryMeta: Record<string, { color: string; icon: string }> = {
   '总结视频': { color: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)', icon: '📝' },
@@ -14,7 +15,8 @@ const defaultMeta = { color: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)', icon: 
 interface VideoItem {
   id: number;
   title: string;
-  iframe_src: string;
+  file_key?: string | null;
+  iframe_src?: string;
   category?: string;
   created_at?: string;
 }
@@ -71,17 +73,23 @@ export default function VideoDetailPage() {
       ) : (
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <RevealWrapper>
-            <div className="glow-card" style={{ padding: 0, overflow: 'hidden', background: '#000' }}>
-              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-                <iframe
-                  src={video.iframe_src}
+            {fileUrl(video.file_key) ? (
+              <div className="glow-card" style={{ padding: 0, overflow: 'hidden', background: '#000' }}>
+                <video
+                  key={video.file_key}
+                  src={fileUrl(video.file_key)}
                   title={video.title}
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
+                  controls
+                  autoPlay
+                  playsInline
+                  style={{ width: '100%', aspectRatio: '16 / 9', display: 'block', background: '#000', objectFit: 'contain' }}
                 />
               </div>
-            </div>
+            ) : (
+              <div className="glow-card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+                <Empty description="视频文件尚未上传，请稍后再来或联系管理员" />
+              </div>
+            )}
           </RevealWrapper>
 
           <RevealWrapper delay={1}>

@@ -3,6 +3,7 @@ import { Modal, Skeleton, Empty, Tag } from 'antd';
 import PageLayout from '../components/PageLayout';
 import RevealWrapper from '../components/RevealWrapper';
 import { voiceAPI } from '../api';
+import { fileUrl } from '../utils/fileUrl';
 
 const palette = ['#FFF3E0', '#FCE4EC', '#E8F5E9', '#E3F2FD', '#FFFDE7', '#F3E5F5'];
 
@@ -113,9 +114,23 @@ export default function VoicesPage() {
                 }}
                 onClick={() => openItem(v)}
               >
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64, background: palette[index % palette.length], opacity: 0.9 }}>
-                  {v.media_type === 'video' ? '🎬' : '🖼️'}
-                </div>
+                {v.media_type === 'video' ? (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64, background: palette[index % palette.length], opacity: 0.9 }}>
+                    🎬
+                  </div>
+                ) : fileUrl(v.file_key) ? (
+                  <img
+                    src={fileUrl(v.file_key)}
+                    alt={v.title}
+                    loading="lazy"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64, background: palette[index % palette.length], opacity: 0.9 }}>
+                    🖼️
+                  </div>
+                )}
                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.3s ease' }} className="voices-overlay">
                   <div style={{ textAlign: 'center', padding: '0 12px' }}>
                     <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>{v.title}</span>
@@ -138,14 +153,32 @@ export default function VoicesPage() {
         styles={{ body: { padding: 0, borderRadius: 20, overflow: 'hidden', background: 'transparent' } }}
       >
         {current && (current.media_type === 'video' ? (
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 20, overflow: 'hidden', background: '#000' }}>
-            <iframe
-              src={current.iframe_src}
-              title={current.title}
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
+          fileUrl(current.file_key) ? (
+            <video
+              key={current.file_key}
+              src={fileUrl(current.file_key)}
+              controls
+              autoPlay
+              playsInline
+              style={{ width: '100%', aspectRatio: '16 / 9', display: 'block', background: '#000', objectFit: 'contain', borderRadius: 20 }}
             />
+          ) : (
+            <div style={{ background: '#fff', borderRadius: 20, overflow: 'hidden' }}>
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <span style={{ fontSize: 64 }}>🎬</span>
+                <h3 style={{ color: '#2C3E33', marginTop: 12 }}>{current.title}</h3>
+                <p style={{ color: '#999' }}>视频文件尚未上传</p>
+              </div>
+            </div>
+          )
+        ) : current.media_type === 'image' && fileUrl(current.file_key) ? (
+          <div style={{ background: '#fff', borderRadius: 20, overflow: 'hidden' }}>
+            <img src={fileUrl(current.file_key)} alt={current.title} style={{ width: '100%', maxHeight: '72vh', objectFit: 'contain', background: '#F6F4EE', display: 'block' }} />
+            <div style={{ padding: '14px 20px' }}>
+              <h3 style={{ color: '#2C3E33', margin: 0, fontSize: 17 }}>{current.title}</h3>
+              {current.author && <p style={{ color: '#6A7A6A', margin: '4px 0 0', fontSize: 14 }}>{current.author}</p>}
+              {current.category && <Tag color="green" style={{ marginTop: 10 }}>{current.category}</Tag>}
+            </div>
           </div>
         ) : (
           <div style={{ aspectRatio: '1', background: palette[current.id % palette.length], display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 20 }}>

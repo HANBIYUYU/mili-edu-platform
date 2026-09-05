@@ -8,6 +8,9 @@ export interface Admin {
 export interface Video {
   id: number
   title: string
+  /** R2 视频对象 key（mp4/webm/mov），播放直接读 /api/files/{file_key} */
+  file_key: string | null
+  /** 兼容列：历史 iframe 数据已弃用，恒为空字符串 */
   iframe_src: string
   category: string
   sort_order: number

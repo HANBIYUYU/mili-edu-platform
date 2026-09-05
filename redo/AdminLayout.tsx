@@ -6,42 +6,83 @@ import { authAPI } from '../api'
 
 const { Sider, Content } = Layout
 
-/** 菜单按「功能」分组；单条的分组自动折叠为一级菜单 */
-const GROUPS: { key: string; label: string; items: { key: string; label: string }[] }[] = [
+/** 菜单按「前台页面」分组（可折叠）；roles 为空 = team + admin 均可见 */
+const PAGES: { key: string; label: string; items: { key: string; label: string; roles?: string[] }[] }[] = [
   {
-    key: 'c-content', label: '内容管理',
+    key: 'p-home', label: '主页',
     items: [
-      { key: '/admin/videos', label: '示范视频' },
-      { key: '/admin/materials', label: '推普资料' },
-      { key: '/admin/gallery', label: '儿童画展' },
-      { key: '/admin/voices', label: '童声童语' },
-      { key: '/admin/moments', label: '支教拾光' },
+      { key: '/admin/films', label: '首页影像', roles: ['team'] },
+      { key: '/admin/news', label: '首页动态', roles: ['team'] },
     ],
   },
   {
-    key: 'c-interact', label: '互动反馈',
-    items: [{ key: '/admin/contacts', label: '留言管理' }],
+    key: 'p-archive', label: '档案馆',
+    items: [
+      { key: '/admin/stages', label: '戏台档案' },
+    ],
   },
   {
-    key: 'c-assets', label: '素材',
-    items: [{ key: '/admin/media', label: '素材库（R2 图床）' }],
+    key: 'p-culture', label: '文化馆',
+    items: [
+      { key: '/admin/red-plays', label: '红色戏曲', roles: ['team'] },
+      { key: '/admin/articles', label: '互动阅读', roles: ['team'] },
+      { key: '/admin/activities', label: '活动预告' },
+    ],
+  },
+  {
+    key: 'p-community', label: '共创',
+    items: [
+      { key: '/admin/submissions', label: '投稿审核', roles: ['team'] },
+      { key: '/admin/suggestions', label: '建言归档', roles: ['team'] },
+      { key: '/admin/quiz', label: '题库', roles: ['team'] },
+    ],
+  },
+  {
+    key: 'p-study', label: '研学',
+    items: [
+      { key: '/admin/bookings', label: '研学预约', roles: ['team'] },
+    ],
+  },
+  {
+    key: 'p-mall', label: '商城',
+    items: [
+      { key: '/admin/products', label: '商品', roles: ['team'] },
+      { key: '/admin/orders', label: '订单' },
+    ],
+  },
+  {
+    key: 'p-ai', label: 'AI 助手',
+    items: [
+      { key: '/admin/faq', label: '问答库', roles: ['team'] },
+    ],
+  },
+  {
+    key: 'p-media', label: '素材',
+    items: [
+      { key: '/admin/media', label: '素材库（图床）', roles: ['team'] },
+    ],
   },
 ]
 
-function buildMenuItems() {
+const ROLE_LABEL: Record<string, string> = {
+  team: '项目团队',
+  admin: '政企文旅管理员',
+}
+
+/** 每页单条功能时折叠成一层，减少嵌套；多条的用可折叠分组 */
+function buildMenuItems(user: { role: string } | null) {
+  const visible = (roles?: string[]) => !roles || (user && roles.includes(user.role))
   const items: any[] = [{ key: '/admin/dashboard', label: <Link to="/admin/dashboard">仪表盘</Link> }]
   const openKeys: string[] = []
-  for (const group of GROUPS) {
-    if (group.items.length === 1) {
-      const m = group.items[0]
-      items.push({ key: m.key, label: <Link to={m.key}>{m.label}</Link> })
+  for (const page of PAGES) {
+    const children = page.items.filter((m) => visible(m.roles))
+    if (children.length === 0) continue
+    const links = children.map((m) => ({ key: m.key, label: <Link to={m.key}>{m.label}</Link> }))
+    if (children.length === 1) {
+      items.push(links[0])
     } else {
-      items.push({
-        key: group.key,
-        label: group.label,
-        children: group.items.map((m) => ({ key: m.key, label: <Link to={m.key}>{m.label}</Link> })),
-      })
-      openKeys.push(group.key)
+      items.push({ key: page.key, label: page.label, children: links })
+      openKeys.push(page.key)
     }
   }
   return { items, openKeys }
@@ -50,7 +91,7 @@ function buildMenuItems() {
 export default function AdminLayout() {
   const location = useLocation()
   const navigate = useNavigate()
-  const [user, setUser] = useState<string | null>(null)
+  const [user, setUser] = useState<{ username: string; role: string } | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -66,7 +107,7 @@ export default function AdminLayout() {
   useEffect(() => {
     if (location.pathname === '/admin/login') return
     authAPI.me().then((res: any) => {
-      setUser(res.username)
+      setUser({ username: res.username, role: res.role || 'team' })
     }).catch(() => {
       navigate('/admin/login')
     })
@@ -78,7 +119,7 @@ export default function AdminLayout() {
     navigate('/admin/login')
   }
 
-  const menu = buildMenuItems()
+  const menu = buildMenuItems(user)
 
   if (location.pathname === '/admin/login') {
     return <Outlet />
@@ -101,10 +142,10 @@ export default function AdminLayout() {
       {!isMobile && (
         <Sider theme="light" width={232} style={{ borderRight: '1px solid #f0f0f0' }}>
           <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
-            <h3 style={{ margin: 0 }}>米粒支教社 · 管理后台</h3>
+            <h3 style={{ margin: 0 }}>湘村新台 · 管理后台</h3>
             {user && (
               <p style={{ margin: '8px 0 0', color: '#666', fontSize: 12 }}>
-                {user} · 管理员
+                {user.username}（{ROLE_LABEL[user.role] || user.role}）
               </p>
             )}
           </div>
@@ -135,7 +176,7 @@ export default function AdminLayout() {
             aria-label="打开菜单"
           />
           <h3 style={{ margin: 0, fontSize: 16, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            米粒支教社 · 管理后台
+            湘村新台 · 管理后台
           </h3>
           <Button type="text" icon={<HomeOutlined />} onClick={() => navigate('/')} aria-label="返回主页" />
         </div>
@@ -155,10 +196,10 @@ export default function AdminLayout() {
         styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column' } }}
       >
         <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid #f0f0f0' }}>
-          <h3 style={{ margin: 0 }}>米粒支教社 · 管理后台</h3>
+          <h3 style={{ margin: 0 }}>湘村新台 · 管理后台</h3>
           {user && (
             <p style={{ margin: '8px 0 0', color: '#666', fontSize: 12 }}>
-              {user} · 管理员
+              {user.username}（{ROLE_LABEL[user.role] || user.role}）
             </p>
           )}
         </div>

@@ -37,18 +37,23 @@ pnpm clean            # 删除所有 node_modules
 ### API（`apps/api`）— Cloudflare Workers + Hono + D1
 
 - 入口：`apps/api/src/index.ts` — 创建 Hono app，注册全局中间件（`logger`、`cors`）和路由，配置错误处理。
-- 所有路由挂载在 `/api` 前缀下：`auth`、`videos`、`materials`、`artworks`、`voices`、`moments`、`contact-forms`、`upload`。
+- 所有路由挂载在 `/api` 前缀下：`auth`、`videos`、`materials`、`artworks`、`voices`、`moments`、`contact-forms`、`upload`、`files`、`media`、`stats`。
 - **认证**：JWT（`jose` 库），通过 httpOnly cookie（`token`）传递。`authMiddleware`（`src/middleware/auth.ts`）验证 cookie 中的 JWT 并设置 `c.set('user', payload)`。仅对写操作（POST/PUT/DELETE）要求认证；公开的 GET 端点无需认证。
 - **数据库**：Cloudflare D1，通过 `c.env.DB` 访问。SQLite 语法。Migration 文件在 `apps/api/migrations/`。类型定义在 `apps/api/src/types.ts`。
 - **环境变量**：`WEBHOOK_URL`（企微机器人 webhook，当前为空字符串）、`JWT_SECRET`（开发默认值，生产环境务必修改）。
-- R2 存储和 KV 命名空间在 `wrangler.toml` 中已注释 — 等待支付方式开通后启用。在此之前，文件上传/下载 API 返回 stub 响应。
+- **R2 文件存储（已启用）**：绑定 `BUCKET`（桶 `mili-edu-assets`），上传白名单/键生成工具在 `src/lib/files.ts`。
+  - `POST /api/upload`（需登录，multipart：`file` + `dir`）→ 返回 R2 key（DB 中 `file_key` 直接存 key）；类型含图片/音频/视频/PDF/Word
+  - `GET /api/files/*`（公开）流式读取，支持 `Range`（HTML5 视频拖动必需）与 `?download=1`
+  - `GET /api/media`（需登录，素材库列表）、`DELETE /api/media`（需登录，body `{key}`）
+  - 资源删除（videos/materials/artworks/voices/moments）级联清理 R2 对象；前端 URL 统一经 `apps/web/src/utils/fileUrl.ts` 的 `fileUrl(key)` 生成
+  - **视频方案**：示范视频与童声童语视频均为 R2 直传（mp4/webm/mov，目录 `videos/`），前台用 HTML5 `<video>` 播放（videos 表有兼容列 `iframe_src` 恒为空、弃用 B站）
 
 ### Web（`apps/web`）— React + Vite + Ant Design + React Router
 
 - 入口：`apps/web/src/main.tsx` — React 18、BrowserRouter、Ant Design ConfigProvider（中文语言包，主题色 `#6BAF92`）。
 - 路由定义在 `apps/web/src/App.tsx`：
   - 前台：`/`（Home 长滚动单页）、`/about`、`/videos`、`/videos/:id`（视频详情页）、`/materials`、`/voices`（童声童语）、`/gallery`、`/contact`（重定向到 `/#contact`）
-  - 后台：`/admin` → `AdminLayout`，包含 login、dashboard、videos、materials、gallery、voices、moments、contacts
+  - 后台：`/admin` → `AdminLayout`，包含 login、dashboard、videos、materials、gallery、voices、moments、contacts、media（素材库）
 - API 客户端：`apps/web/src/api/index.ts` — axios 实例，baseURL 默认为 `/api`，`withCredentials: true`。401 响应自动重定向到 `/admin/login`。
 
 ### 前台组件结构
@@ -110,14 +115,14 @@ Footer:   深色     #2C3E50
 ## 待办事项
 
 详见 `to-do-list.md`。主要剩余事项：
-- R2 图片/音频上传（阻塞于外币卡）
+- 真实素材内容填充（R2 已接入，可后台上传）
 - 企微通知（阻塞于机器人密钥）
 - 搜索、评论/点赞、数据导出等功能增强
 
 ## 关键注意事项
 
 - 目前**没有自动化测试**。修改后请 `pnpm --filter mili-edu-web build` 验证。
-- 视频嵌入仅允许白名单域名：`player.bilibili.com`、`v.qq.com`、`www.youtube.com`（见 `apps/api/src/routes/videos.ts`）。
+- 视频已全部改为 R2 直传 + HTML5 `<video>` 播放（不再使用 B站/iframe 白名单）；`GET /api/files/*` 已实现 Range 分段响应。
 - JWT secret 硬编码在 `wrangler.toml` 中仅供开发使用，生产环境务必通过 Cloudflare secrets 覆盖。
 - 修改全局样式时优先使用 CSS 自定义属性（`var(--color-*)`）和已提取的工具类（`.section-header`、`.btn-primary` 等），避免硬编码。
 - 独立页面使用 `PageLayout` 时务必传入正确的 `backTo` 锚点，确保返回首页时滚动到对应 section。

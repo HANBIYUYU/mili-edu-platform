@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Skeleton, Empty, message } from 'antd';
+import { Skeleton, Empty } from 'antd';
 import { DownloadOutlined, FilePdfOutlined, FileWordOutlined, FilePptOutlined } from '@ant-design/icons';
 import RevealWrapper from '../components/RevealWrapper';
 import { materialAPI } from '../api';
+import { fmtSize } from '../utils/fileUrl';
 
 const typeMeta: Record<string, { color: string; bgColor: string; icon: React.ReactNode }> = {
   pdf:  { color: '#E57373', bgColor: '#FFEBEE', icon: <FilePdfOutlined /> },
@@ -26,13 +27,9 @@ export default function MaterialsSection() {
     }).finally(() => setLoading(false));
   }, []);
 
-  const handleDownload = async (id: number) => {
-    try {
-      const res: any = await materialAPI.download(id);
-      message.info(res.message || '下载功能待启用');
-    } catch (err: any) {
-      message.error(err.message || '下载失败');
-    }
+  const handleDownload = (id: number) => {
+    // 直接打开下载地址（R2 流式返回，附件下载）
+    window.open(materialAPI.downloadUrl(id), '_blank', 'noopener');
   };
 
   return (
@@ -110,6 +107,7 @@ export default function MaterialsSection() {
                       </div>
                       <div style={{ fontSize: 12, color: '#9A9A8A' }}>
                         {m.description || m.file_type?.toUpperCase()}
+                        {m.file_size ? ` · ${fmtSize(m.file_size)}` : ''}
                       </div>
                     </div>
                     <button

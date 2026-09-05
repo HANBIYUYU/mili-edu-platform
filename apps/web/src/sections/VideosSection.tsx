@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Modal, Skeleton, Empty } from 'antd';
+import { Modal, Skeleton, Empty, Alert } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import RevealWrapper from '../components/RevealWrapper';
 import { videoAPI } from '../api';
+import { fileUrl } from '../utils/fileUrl';
 
 const categoryMeta: Record<string, { color: string; icon: string }> = {
   '总结视频': { color: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)', icon: '📝' },
@@ -12,12 +13,14 @@ const categoryMeta: Record<string, { color: string; icon: string }> = {
 
 const defaultMeta = { color: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)', icon: '🎬' };
 
+interface CurrentVideo { title: string; src: string }
+
 export default function VideosSection() {
   const navigate = useNavigate();
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [currentVideo, setCurrentVideo] = useState('');
+  const [current, setCurrent] = useState<CurrentVideo | null>(null);
 
   useEffect(() => {
     videoAPI.list().then((res: any) => {
@@ -25,8 +28,10 @@ export default function VideosSection() {
     }).finally(() => setLoading(false));
   }, []);
 
-  const openVideo = (url: string) => {
-    setCurrentVideo(url);
+  const openVideo = (v: any) => {
+    const src = fileUrl(v.file_key);
+    if (!src) return; // 旧数据未上传文件则不响应
+    setCurrent({ title: v.title, src });
     setModalOpen(true);
   };
 
@@ -73,17 +78,18 @@ export default function VideosSection() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
             {videos.map((v, index) => {
               const meta = categoryMeta[v.category] || defaultMeta;
+              const playable = !!fileUrl(v.file_key);
               return (
                 <RevealWrapper key={v.id} delay={index + 1}>
                   <div
                     className="glow-card"
-                    style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
-                    onClick={() => openVideo(v.iframe_src)}
+                    style={{ padding: 0, overflow: 'hidden', cursor: playable ? 'pointer' : 'not-allowed' }}
+                    onClick={() => playable && openVideo(v)}
                   >
                     <div style={{ height: 160, background: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', fontSize: 48 }}>
                       {meta.icon}
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.05)', transition: 'background 0.3s ease' }} className="video-overlay">
-                        <PlayCircleOutlined style={{ fontSize: 48, color: 'rgba(255,255,255,0.9)', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.2))' }} />
+                        <PlayCircleOutlined style={{ fontSize: 48, color: playable ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.15)', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.2))' }} />
                       </div>
                     </div>
                     <div style={{ padding: 20 }}>
@@ -102,18 +108,22 @@ export default function VideosSection() {
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
-        width={800}
+        width={820}
         centered
+        title={current?.title}
         styles={{ body: { padding: 0, borderRadius: 16, overflow: 'hidden' } }}
       >
-        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-          <iframe
-            src={currentVideo}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
+        {current && (
+          <video
+            key={current.src}
+            src={current.src}
+            controls
+            autoPlay
+            playsInline
+            style={{ width: '100%', aspectRatio: '16 / 9', display: 'block', background: '#000', objectFit: 'contain' }}
           />
-        </div>
+        )}
+        {current && <Alert type="info" showIcon message="课程视频由社团上传，若无法播放请稍后刷新重试" style={{ margin: 8 }} />}
       </Modal>
 
       <div className="section-transition" style={{ background: 'linear-gradient(180deg, transparent, #C8E6C9)' }} />

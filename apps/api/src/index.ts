@@ -9,6 +9,9 @@ import voiceRoutes from './routes/voices'
 import momentRoutes from './routes/moments'
 import contactRoutes from './routes/contact'
 import uploadRoutes from './routes/upload'
+import fileRoutes from './routes/files'
+import mediaRoutes from './routes/media'
+import statsRoutes from './routes/stats'
 
 const app = new Hono<{ Bindings: Env }>()
 
@@ -36,6 +39,9 @@ app.route('/api/voices', voiceRoutes)
 app.route('/api/moments', momentRoutes)
 app.route('/api/contact-forms', contactRoutes)
 app.route('/api/upload', uploadRoutes)
+app.route('/api/files', fileRoutes)
+app.route('/api/media', mediaRoutes)
+app.route('/api/stats', statsRoutes)
 
 app.onError((err, c) => {
   console.error(err)
@@ -50,4 +56,5 @@ type Env = {
   DB: D1Database
   WEBHOOK_URL: string
   JWT_SECRET: string
+  BUCKET: R2Bucket
 }

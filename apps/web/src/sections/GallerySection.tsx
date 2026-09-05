@@ -4,6 +4,7 @@ import { Modal, Skeleton, Empty } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import RevealWrapper from '../components/RevealWrapper';
 import { artworkAPI } from '../api';
+import { fileUrl } from '../utils/fileUrl';
 
 const palette = ['#E8F5E9', '#FCE4EC', '#FFF3E0', '#E3F2FD', '#FFFDE7', '#F3E5F5'];
 
@@ -71,44 +72,57 @@ export default function GallerySection() {
           <Empty description="暂无作品" />
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 24 }}>
-            {artworks.map((a, index) => (
-              <RevealWrapper key={a.id} delay={index + 1}>
-                <div
-                  style={{
-                    aspectRatio: '1',
-                    background: 'rgba(255, 255, 255, 0.15)',
-                    backdropFilter: 'blur(8px)',
-                    borderRadius: 20,
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', overflow: 'hidden', position: 'relative',
-                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget;
-                    el.style.transform = 'scale(1.05)';
-                    el.style.boxShadow = '0 0 32px rgba(107, 175, 146, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget;
-                    el.style.transform = 'scale(1)';
-                    el.style.boxShadow = 'none';
-                  }}
-                  onClick={() => openLightbox(a)}
-                >
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64, background: palette[index % palette.length], opacity: 0.9 }}>
-                    <PictureOutlined style={{ fontSize: 48, color: 'rgba(0,0,0,0.15)' }} />
-                  </div>
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.3s ease' }} className="gallery-overlay">
-                    <div style={{ textAlign: 'center' }}>
-                      <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>{a.title}</span>
-                      {a.child_name && <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, margin: '4px 0 0' }}>{a.child_name}</p>}
+            {artworks.map((a, index) => {
+              const url = fileUrl(a.file_key);
+              return (
+                <RevealWrapper key={a.id} delay={index + 1}>
+                  <div
+                    style={{
+                      aspectRatio: '1',
+                      background: 'rgba(255, 255, 255, 0.15)',
+                      backdropFilter: 'blur(8px)',
+                      borderRadius: 20,
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', overflow: 'hidden', position: 'relative',
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget;
+                      el.style.transform = 'scale(1.05)';
+                      el.style.boxShadow = '0 0 32px rgba(107, 175, 146, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget;
+                      el.style.transform = 'scale(1)';
+                      el.style.boxShadow = 'none';
+                    }}
+                    onClick={() => openLightbox(a)}
+                  >
+                    {url ? (
+                      <img
+                        src={url}
+                        alt={a.title}
+                        loading="lazy"
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64, background: palette[index % palette.length], opacity: 0.9 }}>
+                        <PictureOutlined style={{ fontSize: 48, color: 'rgba(0,0,0,0.15)' }} />
+                      </div>
+                    )}
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.3s ease' }} className="gallery-overlay">
+                      <div style={{ textAlign: 'center' }}>
+                        <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>{a.title}</span>
+                        {a.child_name && <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, margin: '4px 0 0' }}>{a.child_name}</p>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RevealWrapper>
-            ))}
+                </RevealWrapper>
+              );
+            })}
           </div>
         )}
       </div>
@@ -118,14 +132,22 @@ export default function GallerySection() {
         onCancel={() => setLightboxOpen(false)}
         footer={null}
         centered
-        width={600}
+        width={640}
         styles={{ body: { padding: 0, borderRadius: 20, overflow: 'hidden', background: 'transparent' } }}
       >
         {currentArt && (
-          <div style={{ aspectRatio: '1', background: palette[currentArt.id % palette.length], display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 20 }}>
-            <PictureOutlined style={{ fontSize: 80, color: 'rgba(0,0,0,0.1)', marginBottom: 16 }} />
-            <h3 style={{ color: '#2C3E33', margin: 0 }}>{currentArt.title}</h3>
-            {currentArt.child_name && <p style={{ color: '#6A7A6A', margin: '4px 0 0' }}>{currentArt.child_name}</p>}
+          <div style={{ background: '#fff', borderRadius: 20, overflow: 'hidden' }}>
+            {fileUrl(currentArt.file_key) ? (
+              <img src={fileUrl(currentArt.file_key)} alt={currentArt.title} style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', background: '#F6F4EE', display: 'block' }} />
+            ) : (
+              <div style={{ aspectRatio: '1', background: palette[currentArt.id % palette.length], display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <PictureOutlined style={{ fontSize: 80, color: 'rgba(0,0,0,0.1)' }} />
+              </div>
+            )}
+            <div style={{ padding: '14px 20px' }}>
+              <h3 style={{ color: '#2C3E33', margin: 0, fontSize: 17 }}>{currentArt.title}</h3>
+              {currentArt.child_name && <p style={{ color: '#6A7A6A', margin: '4px 0 0', fontSize: 14 }}>小作者：{currentArt.child_name}</p>}
+            </div>
           </div>
         )}
       </Modal>

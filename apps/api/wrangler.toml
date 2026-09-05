@@ -2,24 +2,28 @@ name = "mili-edu-api"
 main = "src/index.ts"
 compatibility_date = "2026-07-20"
 
+# 自定义域名路由：mili-edu.cn 的 /api/* 请求走本 Worker
+routes = [
+  { pattern = "mili-edu.cn/api/*", zone_name = "mili-edu.cn" }
+]
+
 [observability.logs]
 enabled = true
 invocation_logs = true
 
 [observability.traces]
-enabled = false
+enabled = true
 
 [[d1_databases]]
 binding = "DB"
 database_name = "mili-edu-db"
 database_id = "7d322252-614d-4dd6-ba6f-81d343cdd8a9"
 
-# R2 存储 - TODO: 等外币卡开通后启用
-# [[r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "mili-edu-assets"
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "mili-edu-assets"
 
-# KV 命名空间 - TODO: 创建后填入 id
+# KV 命名空间 - TODO: 后续如需 JWT 黑名单/注销再创建
 # [[kv_namespaces]]
 # binding = "JWT_BLACKLIST"
 # id = "your-kv-namespace-id"
@@ -33,9 +37,15 @@ vars = { ENVIRONMENT = "dev", WEBHOOK_URL = "", JWT_SECRET = "mili-edu-dev-secre
 d1_databases = [
   { binding = "DB", database_name = "mili-edu-db", database_id = "7d322252-614d-4dd6-ba6f-81d343cdd8a9" }
 ]
+r2_buckets = [
+  { binding = "BUCKET", bucket_name = "mili-edu-assets" }
+]
 
 [env.production]
 vars = { ENVIRONMENT = "production", WEBHOOK_URL = "", JWT_SECRET = "3128142401d6ea887a4d2f7326eec2c534a7cc02651e36e8e51fb128c20555f2" }
 d1_databases = [
   { binding = "DB", database_name = "mili-edu-db", database_id = "7d322252-614d-4dd6-ba6f-81d343cdd8a9" }
+]
+r2_buckets = [
+  { binding = "BUCKET", bucket_name = "mili-edu-assets" }
 ]

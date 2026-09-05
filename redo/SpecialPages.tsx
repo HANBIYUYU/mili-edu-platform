@@ -1,0 +1,497 @@
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message, Tag, Spin, Statistic, Card, Row, Col,
+} from 'antd';
+import { CheckOutlined, CloseOutlined, ExportOutlined, PlusOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { submissionsAPI, suggestionsAPI, quizAPI, bookingsAPI, ordersAPI } from '../../api';
+
+const { TextArea } = Input;
+
+const STATUS_MAP: Record<string, string> = {
+  待审核: 'orange', 已通过: 'green', 已驳回: 'red',
+  待处理: 'orange', 已归档: 'blue', 已采纳: 'green',
+  待确认: 'orange', 已确认: 'blue', 已完成: 'green', 已取消: 'red',
+  已核销: 'green',
+};
+
+/** 切回页面 / 标签页重新可见时自动刷新（多端并发时数据能较快同步） */
+function useAutoReload(load: () => void) {
+  useEffect(() => {
+    const onActive = () => { if (document.visibilityState === 'visible') load(); };
+    window.addEventListener('focus', onActive);
+    document.addEventListener('visibilitychange', onActive);
+    return () => {
+      window.removeEventListener('focus', onActive);
+      document.removeEventListener('visibilitychange', onActive);
+    };
+  }, [load]);
+}
+
+/* ---------------- 投稿审核（团队） ---------------- */
+/** 依据 URL 后缀判断素材是图片还是视频 */
+const mediaKind = (url: string): 'image' | 'video' =>
+  /\.(mp4|webm|mov)(\?|#|$)/i.test(url) ? 'video' : 'image';
+
+export function SubmissionsAdmin() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [preview, setPreview] = useState<{ url: string; kind: 'image' | 'video' } | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res: any = await submissionsAPI.list({ limit: 200 });
+      const next = res.list || [];
+      setRows(next);
+      return next;
+    } catch {
+      message.error('加载失败');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  useAutoReload(load);
+
+  const review = async (id: number, status: '已通过' | '已驳回') => {
+    try {
+      await submissionsAPI.review(id, { status });
+      message.success(`已${status}`);
+      load();
+    } catch (e: any) {
+      message.error(e?.error || '操作失败');
+    }
+  };
+
+  const onDelete = async (id: number) => {
+    try {
+      await submissionsAPI.remove(id);
+      const fresh = await load();
+      if (fresh.some((r: any) => r.id === id)) message.error('删除未生效：记录仍在列表中（可能是后台接口版本过旧），请稍后重试');
+      else message.success('已删除');
+    } catch (e: any) {
+      message.error(e?.error || '删除失败');
+    }
+  };
+
+  return (
+    <div>
+      <h2 style={{ marginBottom: 16 }}>投稿审核</h2>
+      <Spin spinning={loading}>
+        <Table
+          rowKey="id"
+          size="middle"
+          scroll={{ x: 'max-content', y: 'max(300px, calc(100vh - 320px))' }}
+          dataSource={rows}
+          pagination={{ pageSize: 10 }}
+          columns={[
+            { title: 'ID', dataIndex: 'id', width: 84 },
+            { title: '作者', dataIndex: 'author_name', width: 110 },
+            { title: '类型', dataIndex: 'type', width: 90, render: (v: string) => <Tag>{v}</Tag> },
+            { title: '内容', dataIndex: 'content', ellipsis: true },
+            {
+              title: '素材', dataIndex: 'media_url', width: 110,
+              render: (v: string) => v ? (
+                <Button size="small" icon={<EyeOutlined />} onClick={() => setPreview({ url: v, kind: mediaKind(v) })}>查看素材</Button>
+              ) : <span style={{ color: '#bbb' }}>无</span>,
+            },
+            { title: '状态', dataIndex: 'status', width: 90, render: (v: string) => <Tag color={STATUS_MAP[v]}>{v}</Tag> },
+            { title: '提交时间', dataIndex: 'created_at', width: 160 },
+            {
+              title: '操作', width: 230,
+              render: (_: any, row: any) => (
+                <Space size={4}>
+                  {row.status === '待审核' && (
+                    <>
+                      <Button size="small" type="primary" icon={<CheckOutlined />} onClick={() => review(row.id, '已通过')}>通过</Button>
+                      <Button size="small" danger icon={<CloseOutlined />} onClick={() => review(row.id, '已驳回')}>驳回</Button>
+                    </>
+                  )}
+                  <Popconfirm title="删除该投稿？" description="删除后不可恢复" onConfirm={() => onDelete(row.id)}>
+                    <Button size="small" danger type="text" icon={<DeleteOutlined />}>删除</Button>
+                  </Popconfirm>
+                </Space>
+              ),
+            },
+          ]}
+        />
+        <Modal
+          open={!!preview}
+          onCancel={() => setPreview(null)}
+          footer={null}
+          title="投稿素材预览"
+          width={preview?.kind === 'video' ? 640 : 480}
+        >
+          {preview && (
+            preview.kind === 'video' ? (
+              <video key={preview.url} src={preview.url} controls preload="metadata" style={{ width: '100%', maxHeight: '70vh', borderRadius: 8, background: '#000' }} />
+            ) : (
+              <img key={preview.url} src={preview.url} alt="投稿素材" style={{ width: '100%', borderRadius: 8 }} />
+            )
+          )}
+        </Modal>
+      </Spin>
+    </div>
+  );
+}
+
+/* ---------------- 建言归档（团队/政企） ---------------- */
+export function SuggestionsAdmin() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res: any = await suggestionsAPI.list({ limit: 200 });
+      const next = res.list || [];
+      setRows(next);
+      return next;
+    } catch {
+      message.error('加载失败');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  useAutoReload(load);
+
+  const updateStatus = async (id: number, status: string) => {
+    try {
+      await suggestionsAPI.updateStatus(id, { status });
+      message.success('已更新');
+      load();
+    } catch (e: any) {
+      message.error(e?.error || '操作失败');
+    }
+  };
+
+  const onDelete = async (id: number) => {
+    try {
+      await suggestionsAPI.remove(id);
+      const fresh = await load();
+      if (fresh.some((r: any) => r.id === id)) message.error('删除未生效：记录仍在列表中（可能是后台接口版本过旧），请稍后重试');
+      else message.success('已删除');
+    } catch (e: any) {
+      message.error(e?.error || '删除失败');
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>建言归档</h2>
+        <a href="/api/suggestions/export"><Button icon={<ExportOutlined />}>导出 CSV（文旅局/党史办归档）</Button></a>
+      </div>
+      <Spin spinning={loading}>
+        <Table
+          rowKey="id"
+          size="middle"
+          scroll={{ x: 'max-content', y: 'max(300px, calc(100vh - 320px))' }}
+          dataSource={rows}
+          pagination={{ pageSize: 10 }}
+          columns={[
+            { title: 'ID', dataIndex: 'id', width: 84 },
+            { title: '标题', dataIndex: 'title', width: 200 },
+            { title: '分类', dataIndex: 'category', width: 100, render: (v: string) => <Tag color="gold">{v}</Tag> },
+            { title: '内容', dataIndex: 'content', ellipsis: true },
+            { title: '状态', dataIndex: 'status', width: 90, render: (v: string) => <Tag color={STATUS_MAP[v]}>{v}</Tag> },
+            { title: '时间', dataIndex: 'created_at', width: 160 },
+            {
+              title: '处理', width: 230,
+              render: (_: any, row: any) => (
+                <Space size={4}>
+                  <Select
+                    size="middle"
+                    style={{ width: 120 }}
+                    value={row.status}
+                    onChange={(v) => updateStatus(row.id, v)}
+                    options={['待处理', '已归档', '已采纳'].map((s) => ({ value: s, label: s }))}
+                  />
+                  <Popconfirm title="删除该建言？" description="删除后不可恢复" onConfirm={() => onDelete(row.id)}>
+                    <Button size="small" danger type="text" icon={<DeleteOutlined />}>删除</Button>
+                  </Popconfirm>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </Spin>
+    </div>
+  );
+}
+
+/* ---------------- 题库管理（团队） ---------------- */
+export function QuizAdmin() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form] = Form.useForm();
+
+  const load = useCallback(() => {
+    setLoading(true);
+    quizAPI.list()
+      .then((res: any) => setRows(res.list || []))
+      .catch(() => message.error('加载失败'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  useAutoReload(load);
+
+  const onAdd = async () => {
+    const v = await form.validateFields();
+    setSaving(true);
+    try {
+      await quizAPI.create(v);
+      message.success('已新增');
+      setOpen(false);
+      form.resetFields();
+      load();
+    } catch (e: any) {
+      message.error(e?.error || '保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onDelete = async (id: number) => {
+    try {
+      await quizAPI.remove(id);
+      message.success('已删除');
+      load();
+    } catch (e: any) {
+      message.error(e?.error || '删除失败');
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>题库管理（{rows.length} 题）</h2>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>新增题目</Button>
+      </div>
+      <Spin spinning={loading}>
+        <Table
+          rowKey="id"
+          size="middle"
+          scroll={{ x: 'max-content', y: 'max(300px, calc(100vh - 320px))' }}
+          dataSource={rows}
+          pagination={{ pageSize: 10 }}
+          columns={[
+            { title: 'ID', dataIndex: 'id', width: 84 },
+            { title: '题目', dataIndex: 'question', width: 300 },
+            { title: 'A', dataIndex: 'option_a', width: 140 },
+            { title: 'B', dataIndex: 'option_b', width: 140 },
+            { title: 'C', dataIndex: 'option_c', width: 140 },
+            { title: 'D', dataIndex: 'option_d', width: 140 },
+            { title: '答案', dataIndex: 'answer', width: 60, render: (v: string) => <Tag color="red">{v}</Tag> },
+            {
+              title: '操作', width: 80,
+              render: (_: any, row: any) => (
+                <Popconfirm title="确认删除该题？" onConfirm={() => onDelete(row.id)}>
+                  <Button size="small" danger>删除</Button>
+                </Popconfirm>
+              ),
+            },
+          ]}
+        />
+      </Spin>
+
+      <Modal title="新增题目" open={open} onCancel={() => setOpen(false)} onOk={onAdd} confirmLoading={saving} width={640} destroyOnClose>
+        <Form form={form} layout="vertical">
+          <Form.Item name="question" label="题目" rules={[{ required: true, message: '请填写题目' }]}>
+            <TextArea rows={2} />
+          </Form.Item>
+          <Row gutter={12}>
+            <Col span={12}><Form.Item name="option_a" label="选项 A"><Input /></Form.Item></Col>
+            <Col span={12}><Form.Item name="option_b" label="选项 B"><Input /></Form.Item></Col>
+            <Col span={12}><Form.Item name="option_c" label="选项 C"><Input /></Form.Item></Col>
+            <Col span={12}><Form.Item name="option_d" label="选项 D"><Input /></Form.Item></Col>
+          </Row>
+          <Row gutter={12}>
+            <Col xs={24} sm={8}>
+              <Form.Item name="answer" label="正确答案" rules={[{ required: true, message: '请选择答案' }]}>
+                <Select options={['A', 'B', 'C', 'D'].map((v) => ({ value: v, label: v }))} />
+              </Form.Item>
+            </Col>
+            <Col span={16}>
+              <Form.Item name="explanation" label="解析"><Input /></Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+    </div>
+  );
+}
+
+/* ---------------- 研学预约（团队/政企） ---------------- */
+export function BookingsAdmin() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    bookingsAPI.list({ limit: 200 })
+      .then((res: any) => setRows(res.list || []))
+      .catch(() => message.error('加载失败'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  useAutoReload(load);
+
+  const updateStatus = async (id: number, status: string) => {
+    try {
+      await bookingsAPI.updateStatus(id, { status });
+      message.success('已更新');
+      load();
+    } catch (e: any) {
+      message.error(e?.error || '操作失败');
+    }
+  };
+
+  return (
+    <div>
+      <h2 style={{ marginBottom: 16 }}>研学预约管理</h2>
+      <Spin spinning={loading}>
+        <Table
+          rowKey="id"
+          size="middle"
+          scroll={{ x: 'max-content', y: 'max(300px, calc(100vh - 320px))' }}
+          dataSource={rows}
+          pagination={{ pageSize: 10 }}
+          columns={[
+            { title: 'ID', dataIndex: 'id', width: 84 },
+            { title: '单位', dataIndex: 'org_name', width: 180 },
+            { title: '套餐', dataIndex: 'plan_type', width: 110, render: (v: string) => <Tag color={v === '中小学思政' ? 'red' : 'blue'}>{v}</Tag> },
+            { title: '人数', dataIndex: 'people_count', width: 70 },
+            { title: '时长', dataIndex: 'duration', width: 90 },
+            { title: '目标戏台', dataIndex: 'target_stage', width: 140 },
+            { title: '联系方式', dataIndex: 'contact', width: 160 },
+            { title: '状态', dataIndex: 'status', width: 90, render: (v: string) => <Tag color={STATUS_MAP[v]}>{v}</Tag> },
+            { title: '时间', dataIndex: 'created_at', width: 160 },
+            {
+              title: '处理', width: 150,
+              render: (_: any, row: any) => (
+                <Select
+                  size="middle"
+                  style={{ width: 130 }}
+                  value={row.status}
+                  onChange={(v) => updateStatus(row.id, v)}
+                  options={['待确认', '已确认', '已完成', '已取消'].map((s) => ({ value: s, label: s }))}
+                />
+              ),
+            },
+          ]}
+        />
+      </Spin>
+    </div>
+  );
+}
+
+/* ---------------- 订单管理（团队/政企） ---------------- */
+export function OrdersAdmin() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [revenue, setRevenue] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [list, rev]: any[] = await Promise.all([
+        ordersAPI.list({ limit: 200 }),
+        ordersAPI.revenue(),
+      ]);
+      const next = list.list || [];
+      setRows(next);
+      setRevenue(rev);
+      return next;
+    } catch {
+      message.error('加载失败');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  useAutoReload(load);
+
+  const verify = async (id: number) => {
+    try {
+      await ordersAPI.verify(id);
+      message.success('已核销');
+      load();
+    } catch (e: any) {
+      message.error(e?.error || '核销失败');
+    }
+  };
+
+  const onDelete = async (id: number) => {
+    try {
+      await ordersAPI.remove(id);
+      const fresh = await load();
+      if (fresh.some((r: any) => r.id === id)) message.error('删除未生效：记录仍在列表中（可能是后台接口版本过旧），请稍后重试');
+      else message.success('已删除');
+    } catch (e: any) {
+      message.error(e?.error || '删除失败');
+    }
+  };
+
+  return (
+    <div>
+      <h2 style={{ marginBottom: 16 }}>订单管理 · 营收台账</h2>
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col xs={24} sm={8}>
+          <Card size="small"><Statistic title="累计营收（元）" value={revenue?.totalRevenue ?? 0} prefix="¥" /></Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card size="small"><Statistic title="订单数" value={revenue?.orderCount ?? 0} /></Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card size="small"><Statistic title="已核销优惠券" value={revenue?.couponUsedCount ?? 0} /></Card>
+        </Col>
+      </Row>
+      <Spin spinning={loading}>
+        <Table
+          rowKey="id"
+          size="middle"
+          scroll={{ x: 'max-content', y: 'max(300px, calc(100vh - 320px))' }}
+          dataSource={rows}
+          pagination={{ pageSize: 10 }}
+          columns={[
+            { title: '订单号', dataIndex: 'order_no', width: 180 },
+            { title: '条目', dataIndex: 'items', ellipsis: true, render: (v: string) => {
+              try { return JSON.parse(v).items.map((i: any) => `${i.title}×${i.qty}`).join('、'); } catch { return v; }
+            } },
+            { title: '总额', dataIndex: 'total', width: 90, render: (v: number) => `¥${v}` },
+            { title: '券码', dataIndex: 'coupon_code', width: 130 },
+            { title: '方式', dataIndex: 'pickup_type', width: 80 },
+            { title: '联系人', dataIndex: 'contact', width: 150 },
+            { title: '状态', dataIndex: 'status', width: 90, render: (v: string) => <Tag color={STATUS_MAP[v]}>{v}</Tag> },
+            { title: '时间', dataIndex: 'created_at', width: 160 },
+            {
+              title: '操作', width: 170,
+              render: (_: any, row: any) => (
+                <Space size={4}>
+                  {row.status === '待处理' && (
+                    <Button size="small" type="primary" onClick={() => verify(row.id)}>核销</Button>
+                  )}
+                  <Popconfirm title="删除该订单？" description="删除后不可恢复" onConfirm={() => onDelete(row.id)}>
+                    <Button size="small" danger type="text" icon={<DeleteOutlined />}>删除</Button>
+                  </Popconfirm>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </Spin>
+    </div>
+  );
+}

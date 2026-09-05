@@ -4,6 +4,7 @@ import { PictureOutlined } from '@ant-design/icons';
 import PageLayout from '../components/PageLayout';
 import RevealWrapper from '../components/RevealWrapper';
 import { artworkAPI } from '../api';
+import { fileUrl } from '../utils/fileUrl';
 
 const palette = ['#E8F5E9', '#FCE4EC', '#FFF3E0', '#E3F2FD', '#FFFDE7', '#F3E5F5'];
 
@@ -83,9 +84,19 @@ export default function GalleryPage() {
                 }}
                 onClick={() => openLightbox(a)}
               >
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 72, background: palette[index % palette.length], opacity: 0.9 }}>
-                  <PictureOutlined style={{ fontSize: 52, color: 'rgba(0,0,0,0.12)' }} />
-                </div>
+                {fileUrl(a.file_key) ? (
+                  <img
+                    src={fileUrl(a.file_key)}
+                    alt={a.title}
+                    loading="lazy"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 72, background: palette[index % palette.length], opacity: 0.9 }}>
+                    <PictureOutlined style={{ fontSize: 52, color: 'rgba(0,0,0,0.12)' }} />
+                  </div>
+                )}
                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.3s ease' }} className="gallery-overlay">
                   <div style={{ textAlign: 'center' }}>
                     <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>{a.title}</span>
@@ -107,10 +118,18 @@ export default function GalleryPage() {
         styles={{ body: { padding: 0, borderRadius: 20, overflow: 'hidden', background: 'transparent' } }}
       >
         {currentArt && (
-          <div style={{ aspectRatio: '1', background: palette[currentArt.id % palette.length], display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 20 }}>
-            <PictureOutlined style={{ fontSize: 80, color: 'rgba(0,0,0,0.1)', marginBottom: 16 }} />
-            <h3 style={{ color: '#2C3E33', margin: 0 }}>{currentArt.title}</h3>
-            {currentArt.child_name && <p style={{ color: '#6A7A6A', margin: '4px 0 0' }}>{currentArt.child_name}</p>}
+          <div style={{ background: '#fff', borderRadius: 20, overflow: 'hidden' }}>
+            {fileUrl(currentArt.file_key) ? (
+              <img src={fileUrl(currentArt.file_key)} alt={currentArt.title} style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', background: '#F6F4EE', display: 'block' }} />
+            ) : (
+              <div style={{ aspectRatio: '1', background: palette[currentArt.id % palette.length], display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <PictureOutlined style={{ fontSize: 80, color: 'rgba(0,0,0,0.1)' }} />
+              </div>
+            )}
+            <div style={{ padding: '14px 20px' }}>
+              <h3 style={{ color: '#2C3E33', margin: 0, fontSize: 17 }}>{currentArt.title}</h3>
+              {currentArt.child_name && <p style={{ color: '#6A7A6A', margin: '4px 0 0', fontSize: 14 }}>小作者：{currentArt.child_name}</p>}
+            </div>
           </div>
         )}
       </Modal>

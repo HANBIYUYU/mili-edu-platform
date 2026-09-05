@@ -1,95 +1,54 @@
-import { useEffect, useState } from 'react'
-import { Table, Button, Modal, Form, Input, Select, message, Popconfirm } from 'antd'
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
+import { Tag } from 'antd'
+import AdminCrudPage from '../../components/admin/AdminCrudPage'
 import { materialAPI } from '../../api'
+import { fileUrl, fmtSize } from '../../utils/fileUrl'
 
 export default function AdminMaterials() {
-  const [materials, setMaterials] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
-  const [modalVisible, setModalVisible] = useState(false)
-  const [form] = Form.useForm()
-
-  const fetchMaterials = async () => {
-    setLoading(true)
-    try {
-      const res: any = await materialAPI.list()
-      setMaterials(res.data || [])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => { fetchMaterials() }, [])
-
-  const handleAdd = async (values: any) => {
-    try {
-      await materialAPI.create(values)
-      message.success('添加成功')
-      setModalVisible(false)
-      form.resetFields()
-      fetchMaterials()
-    } catch (err: any) {
-      message.error(err.error || '添加失败')
-    }
-  }
-
-  const handleDelete = async (id: number) => {
-    try {
-      await materialAPI.delete(id)
-      message.success('删除成功')
-      fetchMaterials()
-    } catch (err: any) {
-      message.error(err.error || '删除失败')
-    }
-  }
-
-  const columns = [
-    { title: 'ID', dataIndex: 'id', width: 80 },
-    { title: '标题', dataIndex: 'title' },
-    { title: '类型', dataIndex: 'file_type', render: (t: string) => t.toUpperCase() },
-    { title: '大小', dataIndex: 'file_size', render: (s: number) => s ? `${(s/1024).toFixed(0)}KB` : '-' },
-    { title: '创建时间', dataIndex: 'created_at' },
-    {
-      title: '操作', width: 100,
-      render: (_: any, record: any) => (
-        <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.id)}>
-          <Button type="link" danger icon={<DeleteOutlined />} />
-        </Popconfirm>
-      )
-    }
-  ]
-
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1>资料管理</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
-          新增资料
-        </Button>
-      </div>
-      <Table columns={columns} dataSource={materials} rowKey="id" loading={loading} pagination={{ pageSize: 10 }} />
-      <Modal title="新增资料" open={modalVisible} onCancel={() => setModalVisible(false)} footer={null}>
-        <Form form={form} onFinish={handleAdd} layout="vertical">
-          <Form.Item name="title" label="标题" rules={[{ required: true }]}>
-            <Input placeholder="资料标题" />
-          </Form.Item>
-          <Form.Item name="file_key" label="文件路径" rules={[{ required: true }]}>
-            <Input placeholder="R2 文件路径（如 docs/file.pdf）" />
-          </Form.Item>
-          <Form.Item name="file_type" label="类型" rules={[{ required: true }]}>
-            <Select>
-              <Select.Option value="pdf">PDF</Select.Option>
-              <Select.Option value="docx">Word</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="description" label="描述">
-            <Input.TextArea rows={2} />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>保存</Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+    <AdminCrudPage
+      config={{
+        title: '推普资料管理',
+        rowKey: 'id',
+        api: {
+          list: async () => {
+            const r: any = await materialAPI.list()
+            return { list: r.data || [] }
+          },
+          create: (d) => materialAPI.create(d),
+          update: (id, d) => materialAPI.update(id, d),
+          remove: (id) => materialAPI.delete(id),
+        },
+        columns: [
+          { title: 'ID', dataIndex: 'id', width: 70 },
+          { title: '标题', dataIndex: 'title' },
+          {
+            title: '类型', dataIndex: 'file_type', width: 90,
+            render: (v: string) => <Tag color={v === 'pdf' ? 'red' : 'blue'}>{String(v).toUpperCase()}</Tag>,
+          },
+          {
+            title: '大小', dataIndex: 'file_size', width: 100,
+            render: (v: number) => fmtSize(v),
+          },
+          {
+            title: '文件', dataIndex: 'file_key', width: 280,
+            render: (v: string) => v ? <a href={fileUrl(v)} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>{v}</a> : '-',
+          },
+          { title: '描述', dataIndex: 'description', ellipsis: true },
+          { title: '排序', dataIndex: 'sort_order', width: 70 },
+          { title: '创建时间', dataIndex: 'created_at', width: 170 },
+        ],
+        fields: [
+          { name: 'title', label: '资料标题', required: true },
+          { name: 'file_type', label: '文件类型', type: 'select', span: 1, required: true, options: [{ value: 'pdf', label: 'PDF' }, { value: 'docx', label: 'Word (.docx)' }] },
+          { name: 'sort_order', label: '排序', type: 'number', span: 1 },
+          {
+            name: 'file_key', label: '文件（素材库）', type: 'media', kinds: ['doc'], required: true,
+            extra: '先到「素材库」上传 PDF / Word，再点「素材库」选用；文件大小自动读取',
+          },
+          { name: 'description', label: '描述说明', type: 'textarea' },
+        ],
+        defaultValues: { file_type: 'pdf', sort_order: 0 },
+      }}
+    />
   )
 }

@@ -31,6 +31,13 @@ contacts.get('/', authMiddleware, async (c) => {
   return c.json({ data: results })
 })
 
+contacts.delete('/:id', authMiddleware, async (c) => {
+  const id = c.req.param('id')
+  const db = c.env.DB
+  await db.prepare('DELETE FROM contact_forms WHERE id = ?').bind(id).run()
+  return c.json({ success: true })
+})
+
 export default contacts
 
 type Env = {
