@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../middleware/auth'
-import { contentTypeOfKey, extOf, removeObject, sizeOfKey } from '../lib/files'
+import { contentTypeOfKey, extOf, sizeOfKey, toR2Key } from '../lib/files'
 
 const materials = new Hono<{ Bindings: Env }>()
 
@@ -88,13 +88,8 @@ materials.put('/:id', authMiddleware, async (c) => {
 materials.delete('/:id', authMiddleware, async (c) => {
   const id = c.req.param('id')
   const db = c.env.DB
-  const existing = await db.prepare('SELECT file_key FROM materials WHERE id = ?').bind(id).first()
-
+  // 只删数据库记录；R2 素材为素材库公共资产，不随内容删除自动清理
   await db.prepare('DELETE FROM materials WHERE id = ?').bind(id).run()
-  if (existing) {
-    await removeObject(c.env.BUCKET, existing.file_key as string | null)
-  }
-
   return c.json({ success: true })
 })
 
@@ -108,17 +103,21 @@ materials.get('/:id/download', async (c) => {
     return c.json({ error: '资料不存在' }, 404)
   }
 
-  const bucket = c.env.BUCKET
-  const key = material.file_key as string
-  const object = await bucket.get(key)
-
-  if (!object) {
-    return c.json({ error: '文件尚未上传到存储，请联系管理员在后台重新上传', file_key: key }, 404)
+  const r2Key = toR2Key(material.file_key as string)
+  if (!r2Key) {
+    return c.json({ error: '该资料文件不是本站存储（或未在后台重新上传），无法下载' }, 404)
   }
 
-  const ext = extOf(key) || (material.file_type === 'pdf' ? '.pdf' : '.docx')
+  const bucket = c.env.BUCKET
+  const object = await bucket.get(r2Key)
+
+  if (!object) {
+    return c.json({ error: '文件尚未上传到存储，请联系管理员在后台重新上传', file_key: material.file_key }, 404)
+  }
+
+  const ext = extOf(r2Key) || (material.file_type === 'pdf' ? '.pdf' : '.docx')
   const headers = new Headers()
-  headers.set('Content-Type', object.httpMetadata?.contentType || contentTypeOfKey(key))
+  headers.set('Content-Type', object.httpMetadata?.contentType || contentTypeOfKey(r2Key))
   headers.set('Cache-Control', 'public, max-age=3600')
   if (object.size !== undefined) headers.set('Content-Length', String(object.size))
   headers.set(
@@ -126,7 +125,7 @@ materials.get('/:id/download', async (c) => {
     `attachment; filename*=UTF-8''${encodeURIComponent((material.title as string) + ext)}`
   )
 
-  return c.body(object.body as ReadableStream, { headers })
+  return new Response(object.body as ReadableStream, { headers })
 })
 
 export default materials

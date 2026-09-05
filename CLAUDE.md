@@ -45,8 +45,10 @@ pnpm clean            # 删除所有 node_modules
   - `POST /api/upload`（需登录，multipart：`file` + `dir`）→ 返回 R2 key（DB 中 `file_key` 直接存 key）；类型含图片/音频/视频/PDF/Word
   - `GET /api/files/*`（公开）流式读取，支持 `Range`（HTML5 视频拖动必需）与 `?download=1`
   - `GET /api/media`（需登录，素材库列表）、`DELETE /api/media`（需登录，body `{key}`）
-  - 资源删除（videos/materials/artworks/voices/moments）级联清理 R2 对象；前端 URL 统一经 `apps/web/src/utils/fileUrl.ts` 的 `fileUrl(key)` 生成
+  - **素材生命周期**：R2 素材是素材库公共资产，删除内容记录（videos/materials/artworks/voices/moments）**不会**自动删 R2 对象；清理请在素材库手动删除
+  - **file_key 归一化**：DB 中 `file_key` 可能带 `/api/files/` 前缀（旧数据/粘贴 URL），读取与删除前用后端 `toR2Key`（`src/lib/files.ts`）、前端输入用 `normalizeFileKey`（`utils/fileUrl.ts`）归一化；展示 URL 统一用 `fileUrl(key)` 生成
   - **视频方案**：示范视频与童声童语视频均为 R2 直传（mp4/webm/mov，目录 `videos/`），前台用 HTML5 `<video>` 播放（videos 表有兼容列 `iframe_src` 恒为空、弃用 B站）
+  - **大文件直传**（`/api/upload-large`）：>90MB 走 R2 S3 预签名 Multipart（64MB/片、3 并发、浏览器直 PUT 到 `R2_ENDPOINT`，绕过 Worker 100MB 限制，上限 5GiB）。需 Worker secrets：`R2_ENDPOINT` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY`；桶 CORS 一次性配置见 `/api/upload-large/setup-cors`。签名实现 `src/lib/s3.ts`，前端 `src/utils/uploadLarge.ts`
 
 ### Web（`apps/web`）— React + Vite + Ant Design + React Router
 

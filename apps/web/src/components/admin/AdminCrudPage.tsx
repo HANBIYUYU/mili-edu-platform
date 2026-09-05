@@ -6,7 +6,7 @@ import {
   PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined, PictureOutlined, LinkOutlined,
 } from '@ant-design/icons';
 import { MediaPickerModal, type MediaKind } from './MediaLibrary';
-import { fileUrl, isAudioKey, isDocKey, isImageKey, isVideoKey } from '../../utils/fileUrl';
+import { fileUrl, isAudioKey, isDocKey, isImageKey, isVideoKey, normalizeFileKey } from '../../utils/fileUrl';
 
 const { TextArea } = Input;
 
@@ -86,7 +86,7 @@ function MediaInput({ value, onChange, kinds, placeholder }: {
       <Space.Compact style={{ width: '100%' }}>
         <Input
           value={value || ''}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(e) => onChange?.(normalizeFileKey(e.target.value))}
           placeholder={placeholder || 'R2 key，如 artworks/202608/xxx.jpg，或点击右侧选择'}
         />
         <Button icon={<PictureOutlined />} onClick={() => setPick(true)}>素材库</Button>

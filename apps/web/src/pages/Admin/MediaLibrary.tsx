@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  Button, Empty, Input, Select, Space, Spin, Tag, Upload, Modal, Progress, message, Popconfirm,
+  Alert, Button, Empty, Input, Select, Space, Spin, Tag, Upload, Modal, Progress, message, Popconfirm,
 } from 'antd'
 import { CloudUploadOutlined, ReloadOutlined, SearchOutlined, PictureOutlined } from '@ant-design/icons'
 import { mediaAPI } from '../../api'
 import { fileUrl, fmtSize, dirOfKey, isImageKey, isAudioKey, isVideoKey, isDocKey } from '../../utils/fileUrl'
+import { COMPRESS_ADVICE_THRESHOLD, uploadAny } from '../../utils/uploadLarge'
 
 const UPLOAD_DIRS = ['videos', 'docs', 'artworks', 'audios', 'voices', 'moments', 'images', 'misc']
 const DIR_HINTS: Record<string, string> = {
@@ -33,6 +34,7 @@ export default function MediaLibraryPage() {
   const [preview, setPreview] = useState('')
   const [busy, setBusy] = useState(false)
   const [percent, setPercent] = useState(0)
+  const [meta, setMeta] = useState<{ part: number; parts: number } | null>(null)
 
   const reload = useCallback(() => {
     setLoading(true)
@@ -88,10 +90,14 @@ export default function MediaLibraryPage() {
     if (!file) { message.warning('请先选择文件'); return }
     setBusy(true)
     setPercent(0)
+    setMeta(null)
     try {
-      await mediaAPI.upload(file, uploadDir, setPercent)
+      await uploadAny(file, uploadDir, (pct, m) => {
+        setPercent(pct)
+        if (m) setMeta({ part: m.part, parts: m.parts })
+      })
       message.success('上传成功')
-      setFile(null); setPreview(''); setPercent(0); setUploadOpen(false)
+      setFile(null); setPreview(''); setPercent(0); setMeta(null); setUploadOpen(false)
       reload()
     } catch (e: any) {
       message.error(e?.error || '上传失败')
@@ -115,6 +121,7 @@ export default function MediaLibraryPage() {
   const isImg = file ? /\.(jpe?g|png|webp|gif)$/i.test(file.name) : false
   const isAudio = file ? /\.(mp3|wav|m4a|aac)$/i.test(file.name) : false
   const isVideo = file ? /\.(mp4|webm|mov)$/i.test(file.name) : false
+  const isBigVideo = file ? (isVideo && file.size >= COMPRESS_ADVICE_THRESHOLD) : false
 
   return (
     <div>
@@ -187,7 +194,7 @@ export default function MediaLibraryPage() {
       <Modal
         title="上传素材"
         open={uploadOpen}
-        onCancel={() => { setFile(null); setPreview(''); setPercent(0); setUploadOpen(false) }}
+        onCancel={() => { setFile(null); setPreview(''); setPercent(0); setMeta(null); setUploadOpen(false) }}
         onOk={doUpload}
         okText={busy ? `上传中 ${percent}%` : '确认上传'}
         confirmLoading={busy}
@@ -221,10 +228,21 @@ export default function MediaLibraryPage() {
             <div style={{ marginTop: 6, color: '#666', fontSize: 13 }}>{file.name} · {fmtSize(file.size)}</div>
           </div>
         )}
+        {isBigVideo && (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginTop: 12 }}
+            message="大视频提示：800MB 级原片建议先压缩再传"
+            description={<span>推荐 H.264、≤1080p、码率 2–3Mbps（CRF 20–23），画质几乎无差、上传更快；继续直传也可以，将自动分片直传 R2（约 64MB/片）。<a href="/compress-guide" target="_blank" rel="noreferrer" style={{ marginLeft: 6 }}>查看压缩教程 →</a></span>}
+          />
+        )}
         {busy && (
           <div style={{ marginTop: 12 }}>
             <Progress percent={percent} status="active" strokeColor="#7CB342" />
-            <div style={{ textAlign: 'center', color: '#999', fontSize: 12 }}>正在上传到 R2… {percent}%</div>
+            <div style={{ textAlign: 'center', color: '#999', fontSize: 12 }}>
+              {meta && meta.parts > 1 ? `已完成 ${meta.part}/${meta.parts} 片 · ` : ''}正在直传 R2… {percent}%
+            </div>
           </div>
         )}
       </Modal>

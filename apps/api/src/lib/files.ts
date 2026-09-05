@@ -75,6 +75,31 @@ export function isLocalKey(key: string | null | undefined): key is string {
   return !!key && !/^https?:\/\//i.test(key)
 }
 
+/**
+ * 归一化 DB 里存的 file_key/thumbnail_key → R2 对象 key。
+ * 兼容三种写法：原始 key（docs/202609/x.pdf）、站内路径（/api/files/docs/...）、
+ * 完整站内地址（https://mili-edu.cn/api/files/docs/...）。
+ * 返回 null 表示不是本桶对象（如站外 http 链接）。
+ */
+export function toR2Key(value: string | null | undefined): string | null {
+  if (!value) return null
+  let s = String(value).trim()
+  const marker = '/api/files/'
+  const idx = s.indexOf(marker)
+  if (idx >= 0) {
+    s = s.slice(idx + marker.length)
+  }
+  s = s.replace(/^\/+/, '')
+  if (!s) return null
+  // 去掉 /api/files 后若仍是外部完整地址（非本桶路径）则视为外链
+  if (/^https?:\/\//i.test(s)) return null
+  try {
+    return s.split('/').map((seg) => decodeURIComponent(seg)).join('/')
+  } catch {
+    return s
+  }
+}
+
 /** 生成防覆盖的新对象 key：{dir}/{yyyyMM}/{uuid}{ext}，全 ASCII */
 export function newObjectKey(dir: string, originalName: string): string {
   const ext = extOf(originalName) || ''
@@ -85,9 +110,10 @@ export function newObjectKey(dir: string, originalName: string): string {
 
 /** 级联删除：资源记录删除时顺带清理 R2 对象（best effort，只处理本地 key） */
 export async function removeObject(bucket: R2Bucket, key: string | null | undefined): Promise<void> {
-  if (!isLocalKey(key)) return
+  const r2Key = toR2Key(key)
+  if (!r2Key) return
   try {
-    await bucket.delete(key)
+    await bucket.delete(r2Key)
   } catch (e) {
     console.error(`R2 delete failed: ${key}`, e)
   }
@@ -95,9 +121,10 @@ export async function removeObject(bucket: R2Bucket, key: string | null | undefi
 
 /** 查询对象大小（仅本地 key；失败返回 null） */
 export async function sizeOfKey(bucket: R2Bucket, key: string | null | undefined): Promise<number | null> {
-  if (!isLocalKey(key)) return null
+  const r2Key = toR2Key(key)
+  if (!r2Key) return null
   try {
-    const o = await bucket.head(key)
+    const o = await bucket.head(r2Key)
     return o?.size ?? null
   } catch (e) {
     console.error(`R2 head failed: ${key}`, e)

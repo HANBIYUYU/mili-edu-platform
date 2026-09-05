@@ -9,6 +9,7 @@ import voiceRoutes from './routes/voices'
 import momentRoutes from './routes/moments'
 import contactRoutes from './routes/contact'
 import uploadRoutes from './routes/upload'
+import uploadLargeRoutes from './routes/upload-large'
 import fileRoutes from './routes/files'
 import mediaRoutes from './routes/media'
 import statsRoutes from './routes/stats'
@@ -39,6 +40,7 @@ app.route('/api/voices', voiceRoutes)
 app.route('/api/moments', momentRoutes)
 app.route('/api/contact-forms', contactRoutes)
 app.route('/api/upload', uploadRoutes)
+app.route('/api/upload-large', uploadLargeRoutes)
 app.route('/api/files', fileRoutes)
 app.route('/api/media', mediaRoutes)
 app.route('/api/stats', statsRoutes)
@@ -57,4 +59,8 @@ type Env = {
   WEBHOOK_URL: string
   JWT_SECRET: string
   BUCKET: R2Bucket
+  // 大文件 S3 直传密钥（可选；由 wrangler secret 注入）
+  R2_ENDPOINT?: string
+  R2_ACCESS_KEY_ID?: string
+  R2_SECRET_ACCESS_KEY?: string
 }

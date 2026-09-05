@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../middleware/auth'
-import { removeObject } from '../lib/files'
 
 const artworks = new Hono<{ Bindings: Env }>()
 
@@ -93,16 +92,8 @@ artworks.put('/:id', authMiddleware, async (c) => {
 artworks.delete('/:id', authMiddleware, async (c) => {
   const id = c.req.param('id')
   const db = c.env.DB
-  const existing = await db.prepare('SELECT file_key, thumbnail_key FROM artworks WHERE id = ?').bind(id).first()
-
+  // 只删记录；R2 素材为素材库公共资产，不随内容删除自动清理
   await db.prepare('DELETE FROM artworks WHERE id = ?').bind(id).run()
-  if (existing) {
-    await removeObject(c.env.BUCKET, existing.file_key as string | null)
-    if (existing.thumbnail_key && existing.thumbnail_key !== existing.file_key) {
-      await removeObject(c.env.BUCKET, existing.thumbnail_key as string | null)
-    }
-  }
-
   return c.json({ success: true })
 })
 

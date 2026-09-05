@@ -80,7 +80,21 @@
 - [ ] 页面加载进度条（NProgress 风格）
 - [ ] Section 间过渡带更精细的颜色微调
 
+## 进行中 / 待完成（需要你在 Cloudflare 提供密钥）
+
+- [ ] **大文件直传启用（代码已上线，等 R2 API Token）**
+  - [ ] 控制台 R2 → Manage R2 API Tokens → 创建（对象读/写，桶 mili-edu-assets），记录 Access Key ID / Secret / Account ID
+  - [ ] 注入 secrets（可自执行，或把三值发给维护者代为注入）：
+    - `pnpm --filter mili-edu-api exec wrangler secret put R2_ENDPOINT`（值：`https://<AccountID>.r2.cloudflarestorage.com`）
+    - `pnpm --filter mili-edu-api exec wrangler secret put R2_ACCESS_KEY_ID`
+    - `pnpm --filter mili-edu-api exec wrangler secret put R2_SECRET_ACCESS_KEY`
+  - [ ] 用管理员登录后调用一次 `POST /api/upload-large/setup-cors`（开启浏览器直传 CORS）
+  - [ ] 实测 ~800MB mp4 上传（后台素材库，自动分片 64MB×N 直传）
+
 ## 功能增强
+
+- [x] 站内压缩指引 — 上传大视频提示中可打开 `/compress-guide`（源码 `video-compress-guide.md` / `apps/web/public/compress-guide.html`）
+- [ ] 大文件直传实测（等 secrets）：`scripts/verify-direct-upload.ps1` 端到端验证
 
 - [ ] 内容填充 — 后台上传真实素材（支教照片按年份 / 儿童画作 / 朗诵音频 / 推普 PDF）并替换种子数据
 - [ ] 搜索功能 — 视频/资料关键词搜索

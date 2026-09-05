@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>视频压缩教程 · 米粒支教社</title>
+<style>
+  :root { --green:#6BAF92; --text:#2C3E33; --muted:#8A9E8F; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#FAF9F6; color:var(--text); font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; line-height:1.7; }
+  .wrap { max-width:760px; margin:0 auto; padding:32px 20px 64px; }
+  h1 { font-size:28px; margin:8px 0 4px; }
+  h2 { font-size:20px; margin:28px 0 10px; padding-left:10px; border-left:4px solid var(--green); }
+  .sub { color:var(--muted); font-size:14px; }
+  .card { background:#fff; border:1px solid #eee; border-radius:14px; padding:16px 20px; margin:12px 0; box-shadow:0 2px 10px rgba(107,175,146,.06); }
+  code { background:#E8F5E9; padding:2px 6px; border-radius:6px; font-family:Consolas,Menlo,monospace; font-size:13px; word-break:break-all; }
+  pre { background:#1f2933; color:#e6edf3; padding:14px 16px; border-radius:12px; overflow-x:auto; font-size:13px; line-height:1.6; }
+  pre code { background:none; color:inherit; padding:0; }
+  table { width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; }
+  th,td { border:1px solid #e5e5e5; padding:8px 10px; text-align:left; }
+  th { background:#F0F7F2; }
+  .tip { background:#FFF8E1; border:1px solid #FFE082; }
+  a.btn { display:inline-block; margin-top:6px; padding:8px 18px; border-radius:20px; background:var(--green); color:#fff; text-decoration:none; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎬 视频压缩教程</h1>
+  <p class="sub">上传到网站前先压一版：又快又清晰，观众打开/拖动也更流畅</p>
+
+  <div class="card">
+    <b>一句话结论：</b>把 4K/超高码率原片（常 500MB–2GB）压成
+    <code>H.264 + ≤1080p + 2~3Mbps</code> 的网页版，<b>讲课/PPT 画面肉眼几乎无差</b>；
+    800MB 级原片通常可压到 200–400MB。原片留档，网站传压缩版。
+  </div>
+
+  <h2>推荐参数</h2>
+  <div class="card">
+    <table>
+      <tr><th>项</th><th>建议值</th><th>原因</th></tr>
+      <tr><td>编码</td><td>H.264</td><td>浏览器兼容最好，免二次转码</td></tr>
+      <tr><td>分辨率</td><td>≤1080p（竖屏 1080×1920）</td><td>够清晰、体积小一半以上</td></tr>
+      <tr><td>码率</td><td>2–3 Mbps（活动记录可 4M）</td><td>讲课/板书/PPT 足够</td></tr>
+      <tr><td>帧率</td><td>25 或 30</td><td>与素材一致即可</td></tr>
+      <tr><td>音频</td><td>AAC 128k 立体声</td><td>质量与体积平衡</td></tr>
+      <tr><td>画质档</td><td>≈ CRF 20–23</td><td>恒定质量、观感几乎无损</td></tr>
+    </table>
+  </div>
+
+  <h2>用 ffmpeg（一条命令）</h2>
+  <pre><code>ffmpeg -i input.mp4 -c:v libx264 -preset medium -crf 22 \
+  -maxrate 3M -bufsize 6M -vf "scale='min(1920,iw)':-2" \
+  -c:a aac -b:a 128k -movflags +faststart output.mp4</code></pre>
+  <div class="card tip">💡 想控制更准的体积，可把 <code>-crf 22</code> 换成
+  <code>-b:v 2.5M -maxrate 2.5M -bufsize 5M</code>。Mac 自带 ffmpeg？没有就装 Homebrew：<code>brew install ffmpeg</code>。</div>
+
+  <h2>不用命令行（图形工具）</h2>
+  <div class="card">
+    <p>• <b>剪映（免费）</b>：导出 → 自定义 → 分辨率 1080p、码率“中/较高(≈3Mbps)”、H.264、MP4</p>
+    <p>• <b>格式工厂 / HandBrake（免费）</b>：预设选 H.264 + MP4 + 1080p，质量 CRF 20–22</p>
+    <p>• <b>手机拍摄</b>：iPhone 可开“高效(HEVC)”，但传到网站前仍建议转 H.264 MP4；MOV 兼容性差勿直传</p>
+  </div>
+
+  <h2>体积速查（2.5Mbps 视频 + 128k 音频 ≈ 0.33MB/秒）</h2>
+  <div class="card">
+    <table>
+      <tr><th>时长</th><th>预计体积</th></tr>
+      <tr><td>5 分钟</td><td>≈ 95–110 MB</td></tr>
+      <tr><td>10 分钟</td><td>≈ 190–220 MB</td></tr>
+      <tr><td>30 分钟</td><td>≈ 550–650 MB（建议拆 2–3 集，单集 ≤300MB）</td></tr>
+    </table>
+  </div>
+
+  <h2>大文件（&gt;90MB）直接传也可以</h2>
+  <div class="card">
+    网站已支持 <b>分片直传 R2</b>：64MB/片、3 路并发，浏览器直接 PUT 到存储端点，
+    不再受 100MB 限制；上传弹窗会显示百分比与“第 x/N 片”。仍建议先压缩一版——省存储、观众体验更好。
+  </div>
+
+  <div class="card" style="text-align:center">
+    <a class="btn" href="/admin/media">返回后台素材库</a>
+  </div>
+</div>
+</body>
+</html>

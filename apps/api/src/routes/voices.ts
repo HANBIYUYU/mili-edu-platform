@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../middleware/auth'
-import { isLocalKey, removeObject } from '../lib/files'
+import { isLocalKey } from '../lib/files'
 
 const voices = new Hono<{ Bindings: Env }>()
 
@@ -102,13 +102,8 @@ voices.put('/:id', authMiddleware, async (c) => {
 voices.delete('/:id', authMiddleware, async (c) => {
   const id = c.req.param('id')
   const db = c.env.DB
-  const existing = await db.prepare('SELECT file_key FROM voices WHERE id = ?').bind(id).first()
-
+  // 只删记录；R2 素材为素材库公共资产，不随内容删除自动清理
   await db.prepare('DELETE FROM voices WHERE id = ?').bind(id).run()
-  if (existing) {
-    await removeObject(c.env.BUCKET, existing.file_key as string | null)
-  }
-
   return c.json({ success: true })
 })
 

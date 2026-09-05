@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  Button, Empty, Input, Modal, Popconfirm, Progress, Select, Space, Spin, Tag, Upload, message,
+  Alert, Button, Empty, Input, Modal, Popconfirm, Progress, Select, Space, Spin, Tag, Upload, message,
 } from 'antd'
 import {
   CloudUploadOutlined, CopyOutlined, DeleteOutlined, PictureOutlined,
@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons'
 import { mediaAPI } from '../../api'
 import { dirOfKey, fileUrl, fmtSize, isAudioKey, isDocKey, isImageKey, isVideoKey } from '../../utils/fileUrl'
+import { COMPRESS_ADVICE_THRESHOLD, uploadAny } from '../../utils/uploadLarge'
 
 export type Asset = { key: string; size: number; uploaded?: string }
 export type MediaKind = 'image' | 'audio' | 'doc' | 'video'
@@ -77,8 +78,9 @@ function UploadMediaModal({ open, onCancel, onDone, initialDir }: {
   const [preview, setPreview] = useState('')
   const [busy, setBusy] = useState(false)
   const [percent, setPercent] = useState(0)
+  const [meta, setMeta] = useState<{ part: number; parts: number } | null>(null)
 
-  const reset = () => { setFile(null); setPreview(''); setBusy(false); setPercent(0) }
+  const reset = () => { setFile(null); setPreview(''); setBusy(false); setPercent(0); setMeta(null) }
   const beforeUpload = (f: File) => {
     const ok = /\.(jpe?g|png|webp|gif|mp3|wav|m4a|aac|mp4|webm|mov|pdf|docx)$/i.test(f.name)
     if (!ok) message.error('仅支持图片 / 音频 / 视频 / PDF / Word')
@@ -93,8 +95,12 @@ function UploadMediaModal({ open, onCancel, onDone, initialDir }: {
     if (!file) { message.warning('请先选择文件'); return }
     setBusy(true)
     setPercent(0)
+    setMeta(null)
     try {
-      await mediaAPI.upload(file, dir, setPercent)
+      await uploadAny(file, dir, (pct, m) => {
+        setPercent(pct)
+        if (m) setMeta({ part: m.part, parts: m.parts })
+      })
       message.success('上传成功')
       reset()
       onDone()
@@ -108,6 +114,7 @@ function UploadMediaModal({ open, onCancel, onDone, initialDir }: {
   const isAudio = file ? /\.(mp3|wav|m4a|aac)$/i.test(file.name) : false
   const isImage = file ? /\.(jpe?g|png|webp|gif)$/i.test(file.name) : false
   const isVideo = file ? /\.(mp4|webm|mov)$/i.test(file.name) : false
+  const isBigVideo = file ? (isVideo && file.size >= COMPRESS_ADVICE_THRESHOLD) : false
 
   return (
     <Modal
@@ -155,10 +162,20 @@ function UploadMediaModal({ open, onCancel, onDone, initialDir }: {
             <div style={{ marginTop: 6, color: '#666', fontSize: 13 }}>{file.name} · {fmtSize(file.size)}</div>
           </div>
         )}
+        {isBigVideo && (
+          <Alert
+            type="warning"
+            showIcon
+            message="大视频提示：800MB 级原片建议先压缩再传"
+            description={<span>推荐 H.264、≤1080p、码率 2–3Mbps（CRF 20–23），画质几乎无差、上传更快；继续直传也可以，将自动分片直传 R2（约 64MB/片）。<a href="/compress-guide" target="_blank" rel="noreferrer" style={{ marginLeft: 6 }}>查看压缩教程 →</a></span>}
+          />
+        )}
         {busy && (
           <div>
             <Progress percent={percent} status="active" strokeColor="#7CB342" />
-            <div style={{ textAlign: 'center', color: '#999', fontSize: 12 }}>正在上传到 R2… {percent}%</div>
+            <div style={{ textAlign: 'center', color: '#999', fontSize: 12 }}>
+              {meta && meta.parts > 1 ? `已完成 ${meta.part}/${meta.parts} 片 · ` : ''}正在直传 R2… {percent}%
+            </div>
           </div>
         )}
       </Space>

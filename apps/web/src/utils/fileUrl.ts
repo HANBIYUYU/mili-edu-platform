@@ -8,6 +8,15 @@ export const fileUrl = (key?: string | null): string => {
   return '/api/files/' + key.split('/').map(encodeURIComponent).join('/')
 }
 
+/** 把可能带 /api/files/ 前缀的值（如从素材库复制的 URL）归一化为纯 R2 key */
+export const normalizeFileKey = (value: string): string => {
+  const marker = '/api/files/'
+  const idx = value.indexOf(marker)
+  let s = idx >= 0 ? value.slice(idx + marker.length) : value
+  s = s.trim().replace(/^\/+/, '')
+  return s
+}
+
 export const isImageKey = (k: string): boolean => /\.(jpe?g|png|webp|gif)$/i.test(k)
 export const isAudioKey = (k: string): boolean => /\.(mp3|wav|m4a|aac)$/i.test(k)
 export const isVideoKey = (k: string): boolean => /\.(mp4|webm|mov)$/i.test(k)
